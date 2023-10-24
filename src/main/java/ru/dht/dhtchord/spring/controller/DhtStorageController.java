@@ -3,9 +3,7 @@ package ru.dht.dhtchord.spring.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.dht.dhtchord.core.DhtNode;
-import ru.dht.dhtchord.spring.client.dto.DhtDataResponse;
-import ru.dht.dhtchord.spring.client.dto.DhtStoreRequest;
-import ru.dht.dhtchord.spring.client.dto.DhtStoreResponse;
+import ru.dht.dhtchord.spring.client.dto.*;
 
 @RestController
 @RequestMapping("/storage")
@@ -24,6 +22,12 @@ public class DhtStorageController {
     public DhtStoreResponse storeData(@RequestBody DhtStoreRequest dhtStoreRequest) {
         Boolean success = dhtNode.storeData(dhtStoreRequest.getKey(), dhtStoreRequest.getValue());
         return new DhtStoreResponse(success);
+    }
+
+    @PostMapping("/initialize")
+    public DhtInitDataResponse initializeStorageData(@RequestBody DhtInitDataRequest dhtInitDataRequest) {
+        Boolean success = dhtNode.initializeData(dhtInitDataRequest.getData());
+        return new DhtInitDataResponse(success);
     }
 
 }
