@@ -8,7 +8,7 @@ import ru.dht.dhtchord.spring.client.DhtClient;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -29,6 +29,10 @@ public class DhtNodeClient {
 
     public boolean registerNewNode(int nodeId, DhtNodeMeta dhtNodeMeta) {
         return dhtClient.registerNewNode(dhtNodeMeta, getDhtNodeAddress(nodeId));
+    }
+
+    public boolean requestTransferDataToNode(int nodeId, Set<Integer> keys) {
+        return dhtClient.requestTransferDataToNode(nodeId, keys, getDhtNodeAddress(nodeId));
     }
 
     public boolean transferDataToNode(int nodeId, Map<Integer, KeyValueStorage> data) {

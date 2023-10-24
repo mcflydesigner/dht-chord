@@ -20,13 +20,13 @@ public class DhtStorageController {
 
     @PostMapping
     public DhtStoreResponse storeData(@RequestBody DhtStoreRequest dhtStoreRequest) {
-        Boolean success = dhtNode.storeData(dhtStoreRequest.getKey(), dhtStoreRequest.getValue());
+        boolean success = dhtNode.storeData(dhtStoreRequest.getKey(), dhtStoreRequest.getValue());
         return new DhtStoreResponse(success);
     }
 
     @PostMapping("/initialize")
     public DhtInitDataResponse initializeStorageData(@RequestBody DhtInitDataRequest dhtInitDataRequest) {
-        Boolean success = dhtNode.initializeData(dhtInitDataRequest.getData());
+        boolean success = dhtNode.initializeData(dhtInitDataRequest.getData());
         return new DhtInitDataResponse(success);
     }
 

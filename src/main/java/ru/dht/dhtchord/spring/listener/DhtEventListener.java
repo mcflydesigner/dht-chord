@@ -27,7 +27,14 @@ public class DhtEventListener {
     @EventListener(ApplicationStartedEvent.class)
     public void transferDataFromSuccessorNode() {
         log.info("Requesting successor node to transfer data");
-        dhtChordRing.requestToTransferDataToNode()
+        boolean result = dhtChordRing.initDataCurrentNode();
+
+        if (!result) {
+            log.error("Failed to transfer data from the successor node.");
+            throw new IllegalStateException(
+                    String.format("Failed to initialize data for the nodeId = %s", dhtNodeMeta.getNodeId())
+            );
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)

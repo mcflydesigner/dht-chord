@@ -41,6 +41,25 @@ public class DhtChordRing {
                 dhtNodeMeta.getNodeId());
     }
 
+    // Request to transfer keys from the successor node
+    public synchronized boolean initDataCurrentNode() {
+        int successor = dhtNode.getSuccessor();
+
+        if (successor == dhtNodeMeta.getNodeId()) {
+            log.warn("Skip to request data transfer from the successor node since the succ({}) = {}",
+                    successor, successor);
+            return true;
+        }
+
+        Set<Integer> keys = dhtNode.getStoredKeys();
+        log.info("Requesting successor node (targetNodeId = {}) to transfer the keys: {}",
+                successor, keys);
+        boolean result = dhtNodeClient.requestTransferDataToNode(successor, keys);
+        log.info("Requested successor node (targetNodeId = {}) to transfer the keys: {}. Result: {}",
+                successor, keys, result);
+        return result;
+    }
+
     public synchronized boolean addNode(int newNodeId, DhtNodeAddress dhtNodeAddress) {
         // TODO: validate newNodeId
         log.info("Node (nodeId = {}) is registering new node: nodeId = {} and address = {}",

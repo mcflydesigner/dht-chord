@@ -15,6 +15,7 @@ import ru.dht.dhtchord.spring.client.dto.*;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -24,11 +25,10 @@ public class RestTemplateDhtClient implements DhtClient {
     private static final String STORAGE_INIT_URI_PATH = STORAGE_URI_PATH + "/initialize";
 
     private static final String REGISTER_NODE_URI_PATH = "/topology/register";
+    private static final String REQUEST_DATA_TRANSFER_URI_PATH = "/topology/data/transfer";
 
     private final static ParameterizedTypeReference<DhtDataResponse> dhtDataResponseTypeRef =
             new ParameterizedTypeReference<DhtDataResponse>() {};
-    private final static ParameterizedTypeReference<DhtStoreResponse> dhtStoreResponseTypeRef =
-            new ParameterizedTypeReference<DhtStoreResponse>() {};
 
     @Override
     public String getDataFromNode(String key, DhtNodeAddress dhtNodeAddress) {
@@ -94,4 +94,19 @@ public class RestTemplateDhtClient implements DhtClient {
         return response.getSuccess();
     }
 
+    @Override
+    public boolean requestTransferDataToNode(int nodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress) {
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host(dhtNodeAddress.getAddress())
+                .path(REQUEST_DATA_TRANSFER_URI_PATH)
+                .buildAndExpand();
+
+        HttpEntity<DhtDataTransferRequest> entity = new HttpEntity<>(new DhtDataTransferRequest(nodeId, keys));
+        RestTemplate restTemplate = new RestTemplate();
+
+        DhtDataTransferResponse response =
+                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtDataTransferResponse.class);
+        return response.getSuccess();
+    }
 }

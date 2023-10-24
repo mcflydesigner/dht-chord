@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.core.DhtChordRing;
 import ru.dht.dhtchord.spring.client.dto.DhtDataTransferRequest;
+import ru.dht.dhtchord.spring.client.dto.DhtDataTransferResponse;
 import ru.dht.dhtchord.spring.client.dto.DhtNodeRegisterRequest;
 
 @AllArgsConstructor
@@ -23,9 +24,11 @@ public class DhtTopologyController {
     }
 
     @PostMapping("/data/transfer")
-    public boolean requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
-        return dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getNodeId(),
-                dhtDataTransferRequest.getKeys());
+    public DhtDataTransferResponse requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
+        return new DhtDataTransferResponse(
+                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getNodeId(),
+                        dhtDataTransferRequest.getKeys())
+        );
     }
 
 }
