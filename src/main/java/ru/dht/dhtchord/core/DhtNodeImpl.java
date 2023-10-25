@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
+import ru.dht.dhtchord.core.exception.NodeNotReadyException;
 import ru.dht.dhtchord.core.storage.KeyValueInMemoryStorage;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 
@@ -29,7 +30,7 @@ public class DhtNodeImpl implements DhtNode {
     private FingerTable fingerTable;
     private final TreeMap<Integer, KeyValueStorage> storedData;
     private final TreeMap<Integer, ReadWriteLock> storedDataLocks;
-    private Boolean isDataInitialized;
+    private boolean isDataInitialized;
 
     public static DhtNode build(int m,
                                 int nodeId,
@@ -65,12 +66,19 @@ public class DhtNodeImpl implements DhtNode {
                 nodeId, fingerTable.getVersion(), nodes);
         Utils.verifyNodesSetIsNotEmpty(nodes);
         int predecessorForNodeId = Predecessor.findPredecessor(nodes, nodeId);
-        // Adding the node IDs in the range: (predecessor; nodeId]
-        for (int key = predecessorForNodeId + 1; key < nodeId; key++) {
-            if (!storedData.containsKey(key)) {
-                log.info("Node (nodeId = {}) is now responsible for the key {}", nodeId, key);
-                storedData.put(key, new KeyValueInMemoryStorage());
-                storedDataLocks.put(key, new ReentrantReadWriteLock(true));
+        if (predecessorForNodeId == nodeId) {
+            // The current node is responsible for the node IDs in the range (all keys): [0; 2 << m)
+            for (int key = 0; key < (1 << m); key++) {
+                if (!storedData.containsKey(key)) {
+                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+                }
+            }
+        } else {
+            // Adding the node IDs in the range: (predecessor; nodeId]
+            for (int key = predecessorForNodeId + 1; key < nodeId; key++) {
+                if (!storedData.containsKey(key)) {
+                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+                }
             }
         }
         predecessor = predecessorForNodeId;
@@ -110,6 +118,13 @@ public class DhtNodeImpl implements DhtNode {
     public String getData(String key) {
         int requiredNode = HashUtils.getNodeIdForKey(key, m);
         if (getStoredKeys().contains(requiredNode)) {
+            if (isDataInitialized) {
+                log.warn("Node (nodeId = {}) failed to retrieve data since it is initializing", nodeId);
+                throw new NodeNotReadyException(
+                        String.format("Node (nodeId = %d) has not finished initialization", nodeId)
+                );
+            }
+
             log.info("Getting data from the current node (nodeId = {}) cache by the key {}", nodeId, key);
             return getData(requiredNode, key);
         }

@@ -7,14 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
+import ru.dht.dhtchord.core.exception.NodeJoinException;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Slf4j
@@ -32,12 +31,26 @@ public class DhtChordRing {
     private final Executor executor = Executors.newFixedThreadPool(5);
 
     // Update all other finger tables
-    public synchronized void registerCurrentNode() {
+    public synchronized void registerCurrentNode() throws NodeJoinException {
         log.info("Started initialization of the current node (nodeId = {}) in the cluster topology",
                 dhtNodeMeta.getNodeId());
-        nodeAddressesMapRef.get().entrySet().stream()
-                .filter(e -> e.getKey() != dhtNodeMeta.getNodeId())
-                .forEach(e -> registerCurrentNode(e.getKey()));
+        List<Integer> nodes = nodeAddressesMapRef.get().keySet().stream()
+                .filter(dhtNodeAddress -> dhtNodeAddress != dhtNodeMeta.getNodeId())
+                .toList();
+
+        for (int node : nodes) {
+            boolean result = registerCurrentNode(node);
+
+            if (!result) {
+                log.error("Node (targetNodeId = {}) failed to register the current node (nodeId = {})",
+                        node, dhtNodeMeta.getNodeId());
+                throw new NodeJoinException(
+                        String.format("Node with nodeId = %d failed to join the cluster topology since remote node failed to register (targetNodeId = %d)",
+                                dhtNodeMeta.getNodeId(), node)
+                );
+            }
+        }
+
         log.info("Finished initialization of the current node (nodeId = {}) in the cluster topology",
                 dhtNodeMeta.getNodeId());
     }
@@ -97,12 +110,13 @@ public class DhtChordRing {
                 requestedKeys, toNodeId, result);
     }
 
-    private void registerCurrentNode(int targetNodeId) {
+    private boolean registerCurrentNode(int targetNodeId) {
         log.info("Attempt to register current node (nodeId = {}) in the cluster topology. Target nodeId = {}",
                 dhtNodeMeta.getNodeId(), targetNodeId);
-        Boolean result = dhtNodeClient.registerNewNode(targetNodeId, dhtNodeMeta);
+        boolean result = dhtNodeClient.registerNewNode(targetNodeId, dhtNodeMeta);
         log.info("Tried to register current node (nodeId = {}) in the cluster topology. Target nodeId = {}. Result = {}",
                 dhtNodeMeta.getNodeId(), targetNodeId, result);
+        return result;
     }
 
 }
