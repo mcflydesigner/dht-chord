@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
@@ -39,12 +40,19 @@ public class DhtNodeImpl implements DhtNode {
         int predecessorForNodeId = Predecessor.findPredecessor(nodes, nodeId);
         TreeMap<Integer, KeyValueStorage> storedData = new TreeMap<>();
         TreeMap<Integer, ReadWriteLock> storedDataLocks = new TreeMap<>();
-        // The current node is responsible for the node IDs in the range: (predecessor; nodeId]
-        int key = predecessorForNodeId + 1;
-        while (key != nodeId + 1) {
-            key = key % (1 << m);
-            becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-            key++;
+        if (predecessorForNodeId == nodeId) {
+            // The current node is responsible for the node IDs in the range (all keys): [0; 2 << m)
+            for (int key = 0; key < (1 << m); key++) {
+                becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+            }
+        } else {
+            // The current node is responsible for the node IDs in the range: (predecessor; nodeId]
+            int key = predecessorForNodeId + 1;
+            while (key != nodeId + 1) {
+                key = key % (1 << m);
+                becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+                key++;
+            }
         }
 
         FingerTable fingerTable = buildFingerTable(m, nodeId, nodes);
@@ -72,7 +80,7 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public synchronized boolean initializeData(Map<Integer, Map<String, String>> data) {
-        log.info("Started initialization of node data (nodeId = {})", nodeId);
+        log.info("Transfer of data is started by the successor. Started initialization of node data (nodeId = {})", nodeId);
 
         for (var entry : data.entrySet()) {
             int key = entry.getKey();
@@ -92,7 +100,8 @@ public class DhtNodeImpl implements DhtNode {
             }
         }
 
-        log.info("Finished successfully initialization of node data (nodeId = {})", nodeId);
+        log.info("Transfer of data from the successor is successfully finished. Finished initialization of node data (nodeId = {})",
+                nodeId);
         isDataInitialized = true;
         return true;
     }
@@ -135,12 +144,22 @@ public class DhtNodeImpl implements DhtNode {
             log.info("Initialization completed. Started transfer of data keys ({}) to the node (targetNodeId = {})",
                     requestedKeys, targetNodeId);
 
-            boolean result = dhtNodeClient.transferDataToNode(targetNodeId, data);
+            Map<Integer, Map<String, String>> dataToTransfer = new HashMap<>();
+            data.forEach((currentNodeId, value) -> dataToTransfer.put(currentNodeId, value.getKeys().stream().collect(Collectors.toMap(
+                            key -> key,
+                            value::getData
+                    ))
+            ));
+
+            boolean result = dhtNodeClient.transferDataToNode(targetNodeId, dataToTransfer);
             if (result) {
                 log.info("Deleting the keys ({}) from the node (nodeId = {}) since transferred to another node (targetNodeId = {})",
                         nodeId, requestedKeys, targetNodeId);
                 requestedKeys.forEach(this::removeKeyFromNodeData);
             }
+
+            log.info("Finished transfer of keys ({}) from the node (nodeId = {}) to the target node (targetNodeId = {}). Result: {}",
+                    requestedKeys, nodeId, targetNodeId, result);
             return result;
         } finally {
             writeLocks.forEach(Lock::unlock);

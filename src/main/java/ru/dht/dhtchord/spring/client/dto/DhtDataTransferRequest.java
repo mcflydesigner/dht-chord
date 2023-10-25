@@ -15,8 +15,11 @@ import java.util.Set;
 @AllArgsConstructor
 public class DhtDataTransferRequest {
 
-    @JsonProperty("nodeId")
-    private int nodeId;
+    @JsonProperty("fromNodeId")
+    private int fromNodeId;
+
+    @JsonProperty("toNodeId")
+    private int toNodeId;
 
     @JsonProperty("keys")
     private Set<Integer> keys;

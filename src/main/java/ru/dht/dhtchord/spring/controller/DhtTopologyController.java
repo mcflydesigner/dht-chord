@@ -26,7 +26,7 @@ public class DhtTopologyController {
     @PostMapping("/data/transfer")
     public DhtDataTransferResponse requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
         return new DhtDataTransferResponse(
-                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getNodeId(),
+                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getToNodeId(),
                         dhtDataTransferRequest.getKeys())
         );
     }

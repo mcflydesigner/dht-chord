@@ -13,7 +13,7 @@ public interface DhtClient {
 
     boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
 
-    boolean requestTransferDataToNode(int nodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
+    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
 
     boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress);
 }

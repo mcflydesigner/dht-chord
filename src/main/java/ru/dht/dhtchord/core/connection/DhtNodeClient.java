@@ -31,19 +31,12 @@ public class DhtNodeClient {
         return dhtClient.registerNewNode(dhtNodeMeta, getDhtNodeAddress(nodeId));
     }
 
-    public boolean requestTransferDataToNode(int nodeId, Set<Integer> keys) {
-        return dhtClient.requestTransferDataToNode(nodeId, keys, getDhtNodeAddress(nodeId));
+    public boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys) {
+        return dhtClient.requestTransferDataToNode(fromNodeId, toNodeId, keys, getDhtNodeAddress(fromNodeId));
     }
 
-    public boolean transferDataToNode(int nodeId, Map<Integer, KeyValueStorage> data) {
-        Map<Integer, Map<String, String>> map = new HashMap<>();
-        data.forEach((currentNodeId, value) -> map.put(currentNodeId, value.getKeys().stream().collect(Collectors.toMap(
-                        key -> key,
-                        value::getData
-                ))
-        ));
-
-        return dhtClient.transferDataToNode(map, getDhtNodeAddress(nodeId));
+    public boolean transferDataToNode(int nodeId, Map<Integer, Map<String, String>> data) {
+        return dhtClient.transferDataToNode(data, getDhtNodeAddress(nodeId));
     }
 
     private DhtNodeAddress getDhtNodeAddress(int nodeId) {

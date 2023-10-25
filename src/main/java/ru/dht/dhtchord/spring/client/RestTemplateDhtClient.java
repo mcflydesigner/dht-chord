@@ -95,14 +95,19 @@ public class RestTemplateDhtClient implements DhtClient {
     }
 
     @Override
-    public boolean requestTransferDataToNode(int nodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress) {
+    public boolean requestTransferDataToNode(int fromNodeId,
+                                             int toNodeId,
+                                             Set<Integer> keys,
+                                             DhtNodeAddress dhtNodeAddress) {
         UriComponents uriComponents = UriComponentsBuilder.newInstance()
                 .scheme("http")
                 .host(dhtNodeAddress.getAddress())
                 .path(REQUEST_DATA_TRANSFER_URI_PATH)
                 .buildAndExpand();
 
-        HttpEntity<DhtDataTransferRequest> entity = new HttpEntity<>(new DhtDataTransferRequest(nodeId, keys));
+        HttpEntity<DhtDataTransferRequest> entity = new HttpEntity<>(
+                new DhtDataTransferRequest(fromNodeId, toNodeId, keys)
+        );
         RestTemplate restTemplate = new RestTemplate();
 
         DhtDataTransferResponse response =

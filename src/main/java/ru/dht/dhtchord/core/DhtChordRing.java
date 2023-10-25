@@ -8,6 +8,7 @@ import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,13 +49,14 @@ public class DhtChordRing {
         if (successor == dhtNodeMeta.getNodeId()) {
             log.warn("Skip to request data transfer from the successor node since the succ({}) = {}",
                     successor, successor);
+            dhtNode.initializeData(Collections.emptyMap());
             return true;
         }
 
         Set<Integer> keys = dhtNode.getStoredKeys();
         log.info("Requesting successor node (targetNodeId = {}) to transfer the keys: {}",
                 successor, keys);
-        boolean result = dhtNodeClient.requestTransferDataToNode(successor, keys);
+        boolean result = dhtNodeClient.requestTransferDataToNode(successor, dhtNodeMeta.getNodeId(), keys);
         log.info("Requested successor node (targetNodeId = {}) to transfer the keys: {}. Result: {}",
                 successor, keys, result);
         return result;
@@ -70,29 +72,29 @@ public class DhtChordRing {
         return true;
     }
 
-    public boolean requestToTransferDataToNode(int targetNodeId,
+    public boolean requestToTransferDataToNode(int toNodeId,
                                                Set<Integer> requestedKeys) {
         // TODO: validate targetNodeId
-        log.info("Node (targetNodeId = {}) requested to transfer a set of keys: {}", targetNodeId, requestedKeys);
+        log.info("Node (targetNodeId = {}) requested to transfer a set of keys: {}", toNodeId, requestedKeys);
 
         if (!dhtNode.getStoredKeys().containsAll(requestedKeys)) {
             log.error("Node (targetNodeId = {}) requested to transfer keys that are not present on the current node (nodeId = {}): {}",
-                    targetNodeId, dhtNodeMeta.getNodeId(), Sets.difference(requestedKeys, dhtNode.getStoredKeys()));
+                    toNodeId, dhtNodeMeta.getNodeId(), Sets.difference(requestedKeys, dhtNode.getStoredKeys()));
             return false;
         }
         // Schedule transferring keys
-        log.info("Scheduled transfer of keys ({}) to the node (targetNodeId = {})", requestedKeys, targetNodeId);
-        executor.execute(() -> performTransferKeysToNode(targetNodeId, requestedKeys));
+        log.info("Scheduled transfer of keys ({}) to the node (targetNodeId = {})", requestedKeys, toNodeId);
+        executor.execute(() -> performTransferKeysToNode(toNodeId, requestedKeys));
 
         return true;
     }
 
-    private synchronized void performTransferKeysToNode(int targetNodeId,
+    private synchronized void performTransferKeysToNode(int toNodeId,
                                                         Set<Integer> requestedKeys) {
-        log.info("Started transfer of keys ({}) to the node (targetNodeId = {})", requestedKeys, targetNodeId);
-        boolean result = dhtNode.transferDataToNode(targetNodeId, requestedKeys);
+        log.info("Started transfer of keys ({}) to the node (targetNodeId = {})", requestedKeys, toNodeId);
+        boolean result = dhtNode.transferDataToNode(toNodeId, requestedKeys);
         log.info("Attempted to transfer data keys ({}) to the node (targetNodeId = {}). Result = {}",
-                requestedKeys, targetNodeId, result);
+                requestedKeys, toNodeId, result);
     }
 
     private void registerCurrentNode(int targetNodeId) {
