@@ -1,18 +1,25 @@
 package ru.dht.dhtchord.core.storage;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KeyValueInMemoryStorage implements KeyValueStorage {
-    private final Map<String, String> data = new HashMap<>();
+    private final Map<String, String> storage = new ConcurrentHashMap<>();
 
+    @Override
     public boolean storeData(String key, String value) {
-        data.put(key, value);
+        storage.put(key, value);
         return true;
     }
 
+    @Override
     public String getData(String key) {
-        return data.get(key);
+        return storage.get(key);
     }
 
+    @Override
+    public Set<String> getKeys() {
+        return storage.keySet();
+    }
 }

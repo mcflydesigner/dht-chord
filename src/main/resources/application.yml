@@ -1,7 +1,7 @@
 dht:
   node:
     # id: 0
-  m: 1
+    # address: localhost:9090
+  m: 3
   nodes:
-    0: localhost:9090
-    1: localhost:9091
+    # 0: localhost:9090

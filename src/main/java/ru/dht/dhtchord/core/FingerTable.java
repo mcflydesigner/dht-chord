@@ -3,19 +3,26 @@ package ru.dht.dhtchord.core;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString
 public class FingerTable {
 
+    private static final AtomicInteger atomicCounter = new AtomicInteger(0);
+
+    private final int m;
+    private final int nodeId;
+    private final TreeSet<Integer> nodes;
     @Getter
     private final Map<Integer, Integer> fingerTable;
-    private final TreeSet<Integer> nodes;
-    private final int nodeId;
-    private final int m;
+    @Getter
+    private final int version;
 
     public static FingerTable buildTable(int m, int nodeId, TreeSet<Integer> nodes) {
         Utils.verifyNodesSetIsNotEmpty(nodes);
@@ -25,7 +32,7 @@ public class FingerTable {
             int k = (nodeId + (1 << i)) % (1 << m);
             map.put(k, Successor.findSuccessor(nodes, k));
         }
-        return new FingerTable(map, nodes, nodeId, m);
+        return new FingerTable(m, nodeId, nodes, map, atomicCounter.incrementAndGet());
     }
 
     public int lookupSuccessorForKey(String key) {
