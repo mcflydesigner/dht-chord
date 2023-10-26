@@ -15,6 +15,10 @@ public interface DhtClient {
 
     DhtNodeMeta updatePredecessor(DhtNodeMeta predecessor, DhtNodeAddress dhtNodeAddress);
 
+    DhtNodeMeta getPredecessor(DhtNodeAddress dhtNodeAddress);
+
+    void notifyAboutPredecessor(DhtNodeMeta predecessor, DhtNodeAddress dhtNodeAddress);
+
 //    boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
 //
 //    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);

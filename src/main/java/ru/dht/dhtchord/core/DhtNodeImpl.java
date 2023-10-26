@@ -2,7 +2,6 @@ package ru.dht.dhtchord.core;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
@@ -12,29 +11,20 @@ import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 
-import java.util.*;
+import java.security.SecureRandom;
+import java.util.Random;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 @Slf4j
 public class DhtNodeImpl implements DhtNode {
 
-    private final DhtNodeMeta selfMeta;
+    private static final Random random = new Random();
+
+    private final DhtNodeMeta selfNode;
     private final DhtNodeClient dhtNodeClient;
     private FingerTable fingerTable;
     private KeyValueStorage storage;
-
-//    public static DhtNode buildFromConfig(HashSpace hashSpace,
-//                                          DhtNodeMeta selfMeta,
-//                                          TreeSet<HashKey> knownNodes,
-//                                          DhtNodeClient dhtNodeClient) {
-//        Utils.verifyNodesSetIsNotEmpty(knownNodes);
-//
-//        int predecessorForNodeId = Predecessor.findPredecessor(knownNodes, nodeId);
-//
-//        FingerTable fingerTable = buildFingerTable(m, nodeId, knownNodes);
-//        return new DhtNodeImpl(nodeId, dhtNodeClient, predecessorForNodeId, fingerTable, storedData, storedDataLocks, false);
-//    }
 
     public static DhtNode buildSingleNode(HashSpace hashSpace,
                                           DhtNodeMeta selfMeta,
@@ -56,8 +46,7 @@ public class DhtNodeImpl implements DhtNode {
         FingerTable fingerTable = FingerTable.buildForCluster(hashSpace,
                 selfMeta, successor, predecessor, (hashKey) -> dhtNodeClient.findSuccessor(successor, hashKey));
         log.info("Generated new finger table for the node (nodeId = {}): {}", selfMeta.getKey(), fingerTable);
-
-
+        return new DhtNodeImpl(selfMeta, dhtNodeClient, fingerTable, storage);
     }
 
     @Override
@@ -67,61 +56,69 @@ public class DhtNodeImpl implements DhtNode {
         return oldPredecessor;
     }
 
-//    @Override
-//    public synchronized void updateFingerTable(TreeSet<Integer> nodes) {
-//        log.info("Node (nodeId = {}) is updating finger table. Current version is {}. New list of nodes: {}",
-//                nodeId, fingerTable.getVersion(), nodes);
-//        Utils.verifyNodesSetIsNotEmpty(nodes);
-//        int predecessorForNodeId = Predecessor.findPredecessor(nodes, nodeId);
-//        if (predecessorForNodeId == nodeId) {
-//            // The current node is responsible for the node IDs in the range (all keys): [0; 2 << m)
-//            for (int key = 0; key < (1 << m); key++) {
-//                if (!storedData.containsKey(key)) {
-//                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-//                }
-//            }
-//        } else {
-//            // Adding the node IDs in the range: (predecessor; nodeId]
-//            for (int key = predecessorForNodeId + 1; key < nodeId; key++) {
-//                if (!storedData.containsKey(key)) {
-//                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-//                }
-//            }
-//        }
-//        predecessor = predecessorForNodeId;
-//        fingerTable = buildFingerTable(m, nodeId, nodes);
-//        log.info("Node (nodeId = {}) updated finger table. New version is {}", nodeId, fingerTable.getVersion());
-//    }
+    @Override
+    public synchronized void stabilize() {
+        log.info("Started stabilization of the node: {}", selfNode.getNodeId());
+
+        DhtNodeMeta successor = fingerTable.getImmediateSuccessor();
+        DhtNodeMeta predecessorOfSucc = dhtNodeClient.getPredecessor(successor);
+        fingerTable.updateSuccessor(predecessorOfSucc);
+        dhtNodeClient.notifyAboutPredecessor(selfNode, successor);
+
+        log.info("Finished stabilization of the current node: {}", selfNode.getNodeId());
+    }
+
+    @Override
+    public void notifyAboutPredecessor(DhtNodeMeta node) {
+        fingerTable.updatePredecessor(node);
+    }
+
+    @Override
+    public synchronized void fixFinger() {
+        int randomIdx = random.nextInt(fingerTable.getHashSpace().getBitLength());
+        log.debug("Fix finger is running for the index = {}", randomIdx);
+        fingerTable.fixFinger(randomIdx, this::findSuccessor);
+    }
 
     @Override
     public String getData(HashKey key) {
+        log.info("Looking the key {} on the node {}", key, selfNode.getNodeId());
         DhtNodeMeta successor = findSuccessor(key);
-        if (selfMeta.getKey().equals(successor.getKey())) {
+        if (selfNode.getKey().equals(successor.getKey())) {
+            log.info("The key {} is found locally on the node {}", key, selfNode.getNodeId());
             return storage.getData(key);
         }
+        log.info("The current node {} found successor for the key {} = {}", key, selfNode.getNodeId(), successor.getNodeId());
         return dhtNodeClient.getDataFromNode(successor, key);
     }
 
     @Override
     public boolean storeData(HashKey key, String value) {
         DhtNodeMeta successor = findSuccessor(key);
-        if (selfMeta.getKey().equals(successor.getKey())) {
+        if (selfNode.getKey().equals(successor.getKey())) {
+            log.info("The key ({}) and value ({}) stored locally on the node {}", key, value, selfNode.getNodeId());
             return storage.storeData(key, value);
         }
+        log.info("The key ({}) and value ({}) will be stored on the successor node {}", key, value, successor.getNodeId());
         return dhtNodeClient.storeDataToNode(successor, key, value);
     }
 
     @Override
     public DhtNodeMeta findSuccessor(HashKey key) {
         if (fingerTable.isSuccessor(key)) {
-            return selfMeta;
+            return selfNode;
         }
 
         DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
-        if (selfMeta.getKey().equals(pred.getKey())) {
+        if (selfNode.getKey().equals(pred.getKey())) {
             return fingerTable.getImmediateSuccessor();
         }
         return dhtNodeClient.findSuccessor(pred, key);
+    }
+
+    @Override
+    public DhtNodeMeta getPredecessor() {
+        return fingerTable.getPredecessorNode();
     }
 
 //    @Override
@@ -152,32 +149,6 @@ public class DhtNodeImpl implements DhtNode {
 //        return true;
 //    }
 //
-//    @Override
-//    public String getData(String key) {
-//        int requiredNode = HashUtils.getNodeIdForKey(key, m);
-//        if (getStoredKeys().contains(requiredNode)) {
-//            if (isDataInitialized) {
-//                log.warn("Node (nodeId = {}) failed to retrieve data since it is initializing", nodeId);
-//                throw new NodeNotReadyException(
-//                        String.format("Node (nodeId = %d) has not finished initialization", nodeId)
-//                );
-//            }
-//
-//            log.info("Getting data from the current node (nodeId = {}) cache by the key {}", nodeId, key);
-//            return getData(requiredNode, key);
-//        }
-//        return redirectGetRequest(key);
-//    }
-//
-//    @Override
-//    public boolean storeData(String key, String value) {
-//        int requiredNode = HashUtils.getNodeIdForKey(key, m);
-//        if (getStoredKeys().contains(requiredNode)) {
-//            log.info("Saving key `{}` and value `{}` to the current node (nodeId = {})", nodeId, key, value);
-//            return storeData(requiredNode, key, value);
-//        }
-//        return redirectStoreRequest(key, value);
-//    }
 //
 //    @Override
 //    public synchronized boolean transferDataToNode(int targetNodeId, Set<Integer> requestedKeys) {

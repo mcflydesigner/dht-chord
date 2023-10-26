@@ -17,6 +17,7 @@ public class FingerTable {
 
     private static final AtomicInteger atomicCounter = new AtomicInteger(0);
 
+    @Getter
     private final HashSpace hashSpace;
     private final DhtNodeMeta selfNode;
     @Getter
@@ -36,19 +37,12 @@ public class FingerTable {
                                               DhtNodeMeta successor,
                                               DhtNodeMeta predecessor,
                                               Function<HashKey, DhtNodeMeta> findSuccessor) {
-        ArrayList<FingerEntry> fingerTable = new ArrayList<>();
-
-        for (int i = 0; i < hashSpace.getBitLength(); i++) {
-            HashKey start = hashSpace.add(selfNode.getKey(), BigInteger.ONE.shiftLeft(i));
-            fingerTable.add(new FingerEntry(start, null, null));
-        }
+        List<FingerEntry> fingerTable = initFingerTable(hashSpace, selfNode);
 
         fingerTable.get(0).setNode(successor);
-
         for (int i = 0; i < fingerTable.size() - 1; i++) {
             FingerEntry fingerEntry = fingerTable.get(i);
             FingerEntry fingerEntryNext = fingerTable.get(i + 1);
-            fingerEntry.setIntervalEnd(fingerEntryNext.getIntervalStart());
 
             if (intervalContainsLeft(selfNode.getKey(), fingerEntry.node.getKey(), fingerEntryNext.getIntervalStart())) {
                 fingerEntryNext.setNode(fingerEntry.node);
@@ -60,12 +54,31 @@ public class FingerTable {
         return new FingerTable(hashSpace, selfNode, predecessor, fingerTable, atomicCounter.incrementAndGet());
     }
 
+    private static List<FingerEntry> initFingerTable(HashSpace hashSpace, DhtNodeMeta selfNode) {
+        ArrayList<FingerEntry> fingerTable = new ArrayList<>();
+        for (int i = 0; i < hashSpace.getBitLength(); i++) {
+            HashKey start = hashSpace.add(selfNode.getKey(), BigInteger.ONE.shiftLeft(i));
+            fingerTable.add(new FingerEntry(start, null, null));
+            if (i > 0) {
+                fingerTable.get(i - 1).setIntervalEnd(start);
+            }
+        }
+        fingerTable.get(fingerTable.size() - 1).setIntervalEnd(selfNode.getKey());
+
+        return fingerTable;
+    }
+
     public static FingerTable buildForSingleNode(HashSpace hashSpace, DhtNodeMeta selfNode) {
+        List<FingerEntry> fingerTable = initFingerTable(hashSpace, selfNode);
+        for (FingerEntry fingerEntry : fingerTable) {
+            fingerEntry.setNode(selfNode);
+        }
+
         return new FingerTable(
                 hashSpace,
                 selfNode,
                 selfNode,
-                new ArrayList<>(),
+                fingerTable,
                 atomicCounter.incrementAndGet()
         );
     }
@@ -82,6 +95,23 @@ public class FingerTable {
             }
         }
         return selfNode;
+    }
+
+    public void updateSuccessor(DhtNodeMeta successor) {
+        if (intervalContainsRight(selfNode.getKey(), getImmediateSuccessor().getKey(), successor.getKey())) {
+            fingerTable.get(0).setNode(successor);
+        }
+    }
+
+    public void updatePredecessor(DhtNodeMeta node) {
+        if (intervalContainsLeft(getPredecessorNode().getKey(), selfNode.getKey(), node.getKey())) {
+            predecessorNode = node;
+        }
+    }
+
+    public void fixFinger(int index, Function<HashKey, DhtNodeMeta> findSuccessor) {
+        FingerEntry fingerEntry = fingerTable.get(index);
+        fingerEntry.setNode(findSuccessor.apply(fingerEntry.intervalStart));
     }
 
     private static boolean intervalContainsLeft(HashKey start, HashKey end, HashKey key) {

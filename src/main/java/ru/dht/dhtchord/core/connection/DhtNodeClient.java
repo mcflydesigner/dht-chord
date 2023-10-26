@@ -36,6 +36,14 @@ public class DhtNodeClient {
         return dhtClient.updatePredecessor(predecessor, node.getAddress());
     }
 
+    public DhtNodeMeta getPredecessor(DhtNodeMeta node) {
+        return dhtClient.getPredecessor(node.getAddress());
+    }
+
+    public void notifyAboutPredecessor(DhtNodeMeta predecessor, DhtNodeMeta node) {
+        dhtClient.notifyAboutPredecessor(predecessor, node.getAddress());
+    }
+
 //    public boolean registerNewNode(int nodeId, DhtNodeMeta dhtNodeMeta) {
 //        return dhtClient.registerNewNode(dhtNodeMeta, getDhtNodeAddress(nodeId));
 //    }

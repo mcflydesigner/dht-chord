@@ -68,7 +68,7 @@ public class DhtNodeConfiguration {
     ) {
         return Strings.isBlank(joinAddress) ?
                 DhtNodeImpl.buildSingleNode(hashSpace, selfMeta, dhtNodeClient, keyValueStorage)
-                : DhtNodeImpl.join(hashSpace, new DhtNodeAddress(joinAddress), dhtNodeClient, keyValueStorage);
+                : DhtNodeImpl.join(hashSpace, selfMeta, new DhtNodeAddress(joinAddress), dhtNodeClient, keyValueStorage);
     }
 
 //    @Bean

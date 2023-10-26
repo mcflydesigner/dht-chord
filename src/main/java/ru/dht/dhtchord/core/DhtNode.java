@@ -12,13 +12,20 @@ public interface DhtNode {
 
     boolean storeData(HashKey key, String value);
 
+    void stabilize();
+
 //    void updateFingerTable(DhtNodeMeta newNode);
 
     DhtNodeMeta findSuccessor(HashKey key);
 
     DhtNodeMeta updatePredecessor(DhtNodeMeta dhtNodeMeta);
 //
-//    int getPredecessor();
+    DhtNodeMeta getPredecessor();
+
+    void notifyAboutPredecessor(DhtNodeMeta dhtNodeMeta);
+
+    void fixFinger();
+
 //
 //    boolean transferDataToNode(int targetNodeId, Set<Integer> requestedKeys);
 }

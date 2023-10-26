@@ -29,6 +29,8 @@ public class RestTemplateDhtClient implements DhtClient {
     private static final String STORAGE_URI_PATH = "/storage";
     private static final String STORAGE_INIT_URI_PATH = STORAGE_URI_PATH + "/initialize";
 
+    private static final String NOTIFY_ABOUT_PREDECESSOR = "/topology/predecessor/notify";
+    private static final String GET_PREDECESSOR_URI_PATH = "/topology/predecessor";
     private static final String SET_PREDECESSOR_URI_PATH = "/topology/predecessor";
     private static final String FIND_SUCCESSOR_URI_PATH = "/topology/successor";
     private static final String REGISTER_NODE_URI_PATH = "/topology/register";
@@ -110,6 +112,41 @@ public class RestTemplateDhtClient implements DhtClient {
                 hashSpace.fromString(predecessorDto.getKey()),
                 new DhtNodeAddress(predecessorDto.getAddress())
         );
+    }
+
+    @Override
+    public DhtNodeMeta getPredecessor(DhtNodeAddress dhtNodeAddress) {
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host(dhtNodeAddress.getAddress())
+                .path(GET_PREDECESSOR_URI_PATH)
+                .buildAndExpand();
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<DhtNodeMetaDto> response =
+                restTemplate.exchange(uriComponents.toUriString(), HttpMethod.GET, null, dhtNodeMetaDtoRef);
+        DhtNodeMetaDto predecessorDto = response.getBody();
+
+        return new DhtNodeMeta(predecessorDto.getNodeId(),
+                hashSpace.fromString(predecessorDto.getKey()),
+                new DhtNodeAddress(predecessorDto.getAddress())
+        );
+    }
+
+    @Override
+    public void notifyAboutPredecessor(DhtNodeMeta predecessor, DhtNodeAddress node) {
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host(node.getAddress())
+                .path(NOTIFY_ABOUT_PREDECESSOR)
+                .buildAndExpand();
+
+        HttpEntity<DhtNodeMetaDto> entity = new HttpEntity<>(
+                new DhtNodeMetaDto(predecessor.getNodeId(), predecessor.getKey().toString(), predecessor.getAddress().getAddress())
+        );
+        RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.postForObject(uriComponents.toUriString(), entity, Object.class);
     }
 
     //    @Override
