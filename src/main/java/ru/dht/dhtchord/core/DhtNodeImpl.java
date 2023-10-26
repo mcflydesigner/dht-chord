@@ -81,19 +81,19 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public String getData(HashKey key) {
-        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
-        if (selfMeta.getKey().equals(pred.getKey())) {
+        if (fingerTable.isSuccessor(key)) {
             return storage.getData(key);
         }
+        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
         return dhtNodeClient.getDataFromNode(pred, key);
     }
 
     @Override
     public boolean storeData(HashKey key, String value) {
-        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
-        if (selfMeta.getKey().equals(pred.getKey())) {
+        if (fingerTable.isSuccessor(key)) {
             return storage.storeData(key, value);
         }
+        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
         return dhtNodeClient.storeDataToNode(pred, key, value);
     }
 

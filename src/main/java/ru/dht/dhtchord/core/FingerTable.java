@@ -17,6 +17,7 @@ public class FingerTable {
 
     private final HashSpace hashSpace;
     private final DhtNodeMeta selfNode;
+    @Getter
     private DhtNodeMeta predecessorNode;
     @Getter
     private final LinkedList<FingerEntry> fingerTable;
@@ -46,6 +47,10 @@ public class FingerTable {
                 new LinkedList<>(),
                 atomicCounter.incrementAndGet()
         );
+    }
+
+    public boolean isSuccessor(HashKey key) {
+        return intervalContains(predecessorNode.getKey(), selfNode.getKey(), key);
     }
 
     public DhtNodeMeta findClosestPredecessor(HashKey key) {
