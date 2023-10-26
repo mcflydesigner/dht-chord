@@ -16,10 +16,6 @@ public class SHA1HashSpace implements HashSpace {
         return HashKey.of(hash);
     }
 
-    public static void main(String[] args) {
-        System.out.println(new SHA1HashSpace().hash("hello"));
-    }
-
     @Override
     public HashKey fromString(String s) {
         if (s.length() * 4 != getBitLength()) {
