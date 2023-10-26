@@ -58,5 +58,8 @@
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
         command: "{{ default_container_command }}"
-        state: present
+        state: started
+        restart: true
+        ports:
+          - "8080:8080"
       with_sequence: count={{ container_count }}
