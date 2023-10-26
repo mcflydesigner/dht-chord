@@ -88,7 +88,7 @@ public class DhtNodeImpl implements DhtNode {
             log.info("The key {} is found locally on the node {}", key, selfNode.getNodeId());
             return storage.getData(key);
         }
-        log.info("The current node {} found successor for the key {} = {}", key, selfNode.getNodeId(), successor.getNodeId());
+        log.info("The current node {} found successor for the key: succ({}) = {}", key, selfNode.getNodeId(), successor.getNodeId());
         return dhtNodeClient.getDataFromNode(successor, key);
     }
 
@@ -121,7 +121,12 @@ public class DhtNodeImpl implements DhtNode {
         return fingerTable.getPredecessorNode();
     }
 
-//    @Override
+    @Override
+    public DhtNodeMeta getSuccessor() {
+        return fingerTable.getImmediateSuccessor();
+    }
+
+    //    @Override
 //    public synchronized boolean initializeData(Map<Integer, Map<String, String>> data) {
 //        log.info("Transfer of data is started by the successor. Started initialization of node data (nodeId = {})", nodeId);
 //

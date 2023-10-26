@@ -20,7 +20,7 @@ public class SHA1HashSpace implements HashSpace {
     @Override
     public HashKey fromString(String s) {
         if (s.length() * 4 > getBitLength()) {
-            throw new IllegalArgumentException("Key has invalid hash space");
+            throw new IllegalArgumentException(String.format("Key has invalid hash space = %s", s));
         }
         return HashKey.fromString(s);
     }

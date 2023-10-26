@@ -20,9 +20,14 @@ public class DhtTopologyController {
     private DhtNode dhtNode;
 
     @GetMapping("/successor")
-    public DhtNodeMetaDto findSuccessor(@RequestParam String key) {
-        HashKey hashKey = hashSpace.fromString(key);
-        DhtNodeMeta successor = dhtNode.findSuccessor(hashKey);
+    public DhtNodeMetaDto findSuccessor(@RequestParam(required = false) String key) {
+        DhtNodeMeta successor;
+        if (key != null) {
+            HashKey hashKey = hashSpace.fromString(key);
+            successor = dhtNode.findSuccessor(hashKey);
+        } else {
+            successor = dhtNode.getSuccessor();
+        }
         return new DhtNodeMetaDto(successor.getNodeId(), successor.getKey().toString(), successor.getAddress().getAddress());
     }
 
@@ -45,20 +50,5 @@ public class DhtTopologyController {
         DhtNodeMeta dhtNodeMeta = new DhtNodeMeta(dhtNodeMetaDto.getNodeId(), hashKey, new DhtNodeAddress(dhtNodeMetaDto.getAddress()));
         dhtNode.notifyAboutPredecessor(dhtNodeMeta);
     }
-
-//    private final DhtChordRing dhtChordRing;
-
-//    @PostMapping("/register")
-//    public boolean registerNewNode(@RequestBody DhtNodeRegisterRequest nodeJoinRequest) {
-//        return dhtChordRing.addNode(nodeJoinRequest.getNodeId(), new DhtNodeAddress(nodeJoinRequest.getAddress()));
-//    }
-//
-//    @PostMapping("/data/transfer")
-//    public DhtDataTransferResponse requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
-//        return new DhtDataTransferResponse(
-//                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getToNodeId(),
-//                        dhtDataTransferRequest.getKeys())
-//        );
-//    }
 
 }

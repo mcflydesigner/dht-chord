@@ -19,8 +19,10 @@ public interface DhtNode {
     DhtNodeMeta findSuccessor(HashKey key);
 
     DhtNodeMeta updatePredecessor(DhtNodeMeta dhtNodeMeta);
-//
+
     DhtNodeMeta getPredecessor();
+
+    DhtNodeMeta getSuccessor();
 
     void notifyAboutPredecessor(DhtNodeMeta dhtNodeMeta);
 
