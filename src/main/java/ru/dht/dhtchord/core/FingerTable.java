@@ -39,7 +39,7 @@ public class FingerTable {
         ArrayList<FingerEntry> fingerTable = new ArrayList<>();
 
         for (int i = 0; i < hashSpace.getBitLength(); i++) {
-            HashKey start = hashSpace.add(selfNode.getKey(), BigInteger.TWO.pow(i));
+            HashKey start = hashSpace.add(selfNode.getKey(), BigInteger.ONE.shiftLeft(i));
             fingerTable.add(new FingerEntry(start, null, null));
         }
 

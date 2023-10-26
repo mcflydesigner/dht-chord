@@ -14,7 +14,7 @@ public class HashKey implements Comparable<HashKey> {
     private final BigInteger intValue;
 
     static HashKey of(BigInteger intValue, int bits) {
-        BigInteger m = BigInteger.valueOf(2).pow(bits);
+        BigInteger m = BigInteger.ONE.shiftLeft(bits);
         intValue = intValue.mod(m);
         return of(intValue.toByteArray());
     }
