@@ -50,7 +50,7 @@ public class FingerTable {
             FingerEntry fingerEntryNext = fingerTable.get(i + 1);
             fingerEntry.setIntervalEnd(fingerEntryNext.getIntervalStart());
 
-            if (intervalContains(selfNode.getKey(), fingerEntry.node.getKey(), fingerEntryNext.getIntervalStart())) {
+            if (intervalContainsLeft(selfNode.getKey(), fingerEntry.node.getKey(), fingerEntryNext.getIntervalStart())) {
                 fingerEntryNext.setNode(fingerEntry.node);
             } else {
                 fingerEntryNext.setNode(findSuccessor.apply(fingerEntryNext.getIntervalStart()));
@@ -71,24 +71,32 @@ public class FingerTable {
     }
 
     public boolean isSuccessor(HashKey key) {
-        return intervalContains(predecessorNode.getKey(), selfNode.getKey(), key);
+        return intervalContainsRight(predecessorNode.getKey(), selfNode.getKey(), key);
     }
 
     public DhtNodeMeta findClosestPredecessor(HashKey key) {
         for (int i = fingerTable.size() - 1; i >= 0; i--) {
             FingerEntry f = fingerTable.get(i);
-            if (intervalContains(f.intervalStart, f.intervalEnd, key)) {
+            if (intervalContainsLeft(f.intervalStart, f.intervalEnd, key)) {
                 return f.node;
             }
         }
         return selfNode;
     }
 
-    private static boolean intervalContains(HashKey start, HashKey end, HashKey key) {
+    private static boolean intervalContainsLeft(HashKey start, HashKey end, HashKey key) {
         if (start.compareTo(end) < 0) {
             return start.compareTo(key) <= 0 && key.compareTo(end) < 0;
         } else {
             return start.compareTo(key) <= 0 || key.compareTo(end) < 0;
+        }
+    }
+
+    private static boolean intervalContainsRight(HashKey start, HashKey end, HashKey key) {
+        if (start.compareTo(end) < 0) {
+            return start.compareTo(key) < 0 && key.compareTo(end) <= 0;
+        } else {
+            return start.compareTo(key) < 0 || key.compareTo(end) <= 0;
         }
     }
 
