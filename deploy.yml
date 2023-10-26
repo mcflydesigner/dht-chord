@@ -53,76 +53,16 @@
         name: "{{ default_container_image }}"
         source: pull
         force_source: true
----
-- hosts: server1
-  remote_user: root
-  become: true
-  vars:
-    container_count: 1
-    node_join_address: ""
-    default_container_name: CSN
-    default_container_image: s1ngle/dhtcsnmse:latest
-    default_container_command: java -jar /app/app.jar
 
-  tasks:
-  - name: Create default containers
-      community.docker.docker_container:
-        name: "{{ default_container_name }}{{ item }}"
-        image: "{{ default_container_image }}"
-        command: "{{ default_container_command }}"
-        env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
-        state: started
-        restart: true
-        ports:
-          - "8080:8080"
-      with_sequence: count={{ container_count }}
----
-- hosts: server2
-  remote_user: root
-  become: true
-  vars:
-    container_count: 1
-    node_join_address: "139.59.138.144:8080"
-    default_container_name: CSN
-    default_container_image: s1ngle/dhtcsnmse:latest
-    default_container_command: java -jar /app/app.jar
-
-  tasks:
-  - name: Create default containers
-      community.docker.docker_container:
-        name: "{{ default_container_name }}{{ item }}"
-        image: "{{ default_container_image }}"
-        command: "{{ default_container_command }}"
-        env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
-        state: started
-        restart: true
-        ports:
-          - "8080:8080"
-      with_sequence: count={{ container_count }}
----
-- hosts: server3
-  remote_user: root
-  become: true
-  vars:
-    container_count: 1
-    node_join_address: "207.154.205.45:8080"
-    default_container_name: CSN
-    default_container_image: s1ngle/dhtcsnmse:latest
-    default_container_command: java -jar /app/app.jar
-
-  tasks:
-  - name: Create default containers
-      community.docker.docker_container:
-        name: "{{ default_container_name }}{{ item }}"
-        image: "{{ default_container_image }}"
-        command: "{{ default_container_command }}"
-        env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
-        state: started
-        restart: true
-        ports:
-          - "8080:8080"
-      with_sequence: count={{ container_count }}
-
+    - name: Create default containers
+        community.docker.docker_container:
+          name: "{{ default_container_name }}{{ item }}"
+          image: "{{ default_container_image }}"
+          command: "{{ default_container_command }}"
+          env:
+            NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+          state: started
+          restart: true
+          ports:
+            - "8080:8080"
+        with_sequence: count={{ container_count }}
