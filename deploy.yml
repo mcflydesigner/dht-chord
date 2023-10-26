@@ -59,6 +59,8 @@
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
         command: "{{ default_container_command }}"
+        env:
+          NODE_JOIN_ADDRESS: ${NODE_JOIN_ADDRESS}
         state: started
         restart: true
         ports:
