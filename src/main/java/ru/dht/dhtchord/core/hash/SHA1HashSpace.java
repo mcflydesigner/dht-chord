@@ -1,6 +1,8 @@
 package ru.dht.dhtchord.core.hash;
 
+import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
+import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +21,7 @@ public class SHA1HashSpace implements HashSpace {
 
     @Override
     public HashKey fromString(String s) {
+        s = StringUtils.trimLeadingCharacter(s, '0');
         if (s.length() * 4 > getBitLength()) {
             throw new IllegalArgumentException(String.format("Key has invalid hash space = %s", s));
         }

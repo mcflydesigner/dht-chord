@@ -3,6 +3,7 @@ package ru.dht.dhtchord.core.hash;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
 import java.util.HexFormat;
@@ -14,8 +15,9 @@ public class HashKey implements Comparable<HashKey> {
     private final BigInteger intValue;
 
     static HashKey of(BigInteger intValue, int bits) {
-        BigInteger m = BigInteger.ONE.shiftLeft(bits);
-        intValue = intValue.mod(m);
+        // intValue - 160 bit / 20 byte
+        BigInteger m = BigInteger.ONE.shiftLeft(bits); // m - 161 bit / 21 byte
+        intValue = intValue.mod(m); // 20b mod 21b = 21b
         return of(intValue.toByteArray());
     }
 
@@ -38,7 +40,7 @@ public class HashKey implements Comparable<HashKey> {
     }
 
     public String toString() {
-        return HexFormat.of().formatHex(value);
+        return StringUtils.trimLeadingCharacter(HexFormat.of().formatHex(value), '0');
     }
 
     @Override
