@@ -70,7 +70,7 @@ public class RestTemplateDhtClient implements DhtClient {
                 .buildAndExpand();
 
         HttpEntity<DhtNodeRegisterRequest> entity = new HttpEntity<>(new DhtNodeRegisterRequest(
-                dhtNodeMeta.getNodeId(), dhtNodeMeta.getDhtNodeAddress().getAddress()
+                dhtNodeMeta.getNodeId(), dhtNodeMeta.getAddress().getAddress()
         ));
         RestTemplate restTemplate = new RestTemplate();
         DhtNodeRegisterResponse response =

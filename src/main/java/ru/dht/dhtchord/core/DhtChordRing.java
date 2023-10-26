@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DhtChordRing {
 
-    private final int m;
     private final DhtNodeMeta dhtNodeMeta;
 
     private final DhtNode dhtNode;

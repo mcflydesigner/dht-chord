@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.util.HexFormat;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class HashKey {
+public class HashKey implements Comparable<HashKey> {
     private final byte[] value;
     private final BigInteger intValue;
 
@@ -20,5 +20,10 @@ public class HashKey {
 
     public String toString() {
         return HexFormat.of().formatHex(value);
+    }
+
+    @Override
+    public int compareTo(HashKey o) {
+        return intValue.compareTo(o.intValue);
     }
 }

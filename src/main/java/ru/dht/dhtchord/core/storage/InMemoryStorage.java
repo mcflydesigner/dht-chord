@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class KeyValueInMemoryStorage implements KeyValueStorage {
+public class InMemoryStorage implements KeyValueStorage {
     private final Map<String, String> storage = new ConcurrentHashMap<>();
 
     @Override

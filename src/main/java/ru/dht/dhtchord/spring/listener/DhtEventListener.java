@@ -44,7 +44,7 @@ public class DhtEventListener {
     @EventListener(ApplicationReadyEvent.class)
     public void logNodeStartedInfo() {
         log.info("Node with nodeId = {} started. Listening to {}", dhtNodeMeta.getNodeId(),
-                dhtNodeMeta.getDhtNodeAddress().getAddress());
+                dhtNodeMeta.getAddress().getAddress());
     }
 
 }

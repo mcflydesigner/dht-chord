@@ -8,6 +8,10 @@ public class Successor {
     public static int findSuccessor(TreeSet<Integer> nodes, int node) {
         Utils.verifyNodesSetIsNotEmpty(nodes);
 
+        if (nodes.contains(node)) {
+            return node;
+        }
+
         // TODO: optimization
         Iterator<Integer> iterator = nodes.iterator();
         while (iterator.hasNext()) {
