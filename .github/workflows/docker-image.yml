@@ -1,3 +1,4 @@
+name: Build Docker
 on:
   push:
     branches: [ "main" ]
@@ -20,3 +21,15 @@ jobs:
       
     - name: Push_Image
       run: docker push ${{secrets.DOCKERHUB_USER}}/dhtcsnmse
+  deploy:
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: dawidd6/action-ansible-playbook@v2
+    - name: run ansible playbook
+      with:
+        playbook: deploy.yml
+        directory: ./
+        key: ${{secrets.SSH_PRIVATE_KEY}}
+        options: |
+          --inventory .hosts
+          --verbose
