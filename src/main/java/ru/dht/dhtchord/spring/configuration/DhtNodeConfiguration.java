@@ -4,6 +4,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.DhtChordRing;
@@ -32,7 +33,7 @@ public class DhtNodeConfiguration {
     public DhtNodeConfiguration(@Value("${dht.node.id}") String nodeId,
                                 @Value("${dht.node.address}") String address,
                                 @Value("${dht.node.joinAddress}") String joinAddress,
-                                DhtClient dhtClient) {
+                                @Lazy DhtClient dhtClient) {
         if (Strings.isBlank(address)) {
             throw new IllegalArgumentException("Address must be present");
         }

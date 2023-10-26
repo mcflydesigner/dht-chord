@@ -2,6 +2,7 @@ package ru.dht.dhtchord.core.hash;
 
 import com.google.common.hash.Hashing;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 public class SHA1HashSpace implements HashSpace {
@@ -22,5 +23,15 @@ public class SHA1HashSpace implements HashSpace {
             throw new IllegalArgumentException("Key has invalid hash space");
         }
         return HashKey.fromString(s);
+    }
+
+    @Override
+    public HashKey add(HashKey hashKey, long i) {
+        return HashKey.of(hashKey.getIntValue().add(BigInteger.valueOf(i)), getBitLength());
+    }
+
+    @Override
+    public HashKey add(HashKey hashKey, BigInteger i) {
+        return HashKey.of(hashKey.getIntValue().add(i), getBitLength());
     }
 }

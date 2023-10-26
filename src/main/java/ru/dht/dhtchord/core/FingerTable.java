@@ -6,8 +6,10 @@ import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
@@ -18,9 +20,10 @@ public class FingerTable {
     private final HashSpace hashSpace;
     private final DhtNodeMeta selfNode;
     @Getter
+    @Setter
     private DhtNodeMeta predecessorNode;
     @Getter
-    private final LinkedList<FingerEntry> fingerTable;
+    private final List<FingerEntry> fingerTable;
     @Getter
     private final int version;
 
@@ -28,23 +31,41 @@ public class FingerTable {
         return fingerTable.isEmpty() ? selfNode : fingerTable.get(0).getNode();
     }
 
-//    public static FingerTable buildTable(HashSpace hashSpace, HashKey selfKey,
-//                                         TreeMap<HashKey, DhtNodeMeta> knownNodes) {
-//        Utils.verifyNodesSetIsNotEmpty(knownNodes);
-//
-//        LinkedList<DhtNodeMeta> fingers = new LinkedList<>();
-//        for (int i = 0; i < hashSpace.getBitLength(); i++) {
-//
-//        }
-//        return new FingerTable(m, nodeId, nodes, fingers, atomicCounter.incrementAndGet());
-//    }
+    public static FingerTable buildForCluster(HashSpace hashSpace,
+                                              DhtNodeMeta selfNode,
+                                              DhtNodeMeta successor,
+                                              DhtNodeMeta predecessor,
+                                              Function<HashKey, DhtNodeMeta> findSuccessor) {
+        ArrayList<FingerEntry> fingerTable = new ArrayList<>();
+
+        for (int i = 0; i < hashSpace.getBitLength(); i++) {
+            HashKey start = hashSpace.add(selfNode.getKey(), BigInteger.TWO.pow(i));
+            fingerTable.add(new FingerEntry(start, null, null));
+        }
+
+        fingerTable.get(0).setNode(successor);
+
+        for (int i = 0; i < fingerTable.size() - 1; i++) {
+            FingerEntry fingerEntry = fingerTable.get(i);
+            FingerEntry fingerEntryNext = fingerTable.get(i + 1);
+            fingerEntry.setIntervalEnd(fingerEntryNext.getIntervalStart());
+
+            if (intervalContains(selfNode.getKey(), fingerEntry.node.getKey(), fingerEntryNext.getIntervalStart())) {
+                fingerEntryNext.setNode(fingerEntry.node);
+            } else {
+                fingerEntryNext.setNode(findSuccessor.apply(fingerEntryNext.getIntervalStart()));
+            }
+        }
+
+        return new FingerTable(hashSpace, selfNode, predecessor, fingerTable, atomicCounter.incrementAndGet());
+    }
 
     public static FingerTable buildForSingleNode(HashSpace hashSpace, DhtNodeMeta selfNode) {
         return new FingerTable(
                 hashSpace,
                 selfNode,
                 selfNode,
-                new LinkedList<>(),
+                new ArrayList<>(),
                 atomicCounter.incrementAndGet()
         );
     }
@@ -54,8 +75,8 @@ public class FingerTable {
     }
 
     public DhtNodeMeta findClosestPredecessor(HashKey key) {
-        for (Iterator<FingerEntry> it = fingerTable.descendingIterator(); it.hasNext(); ) {
-            FingerEntry f = it.next();
+        for (int i = fingerTable.size() - 1; i >= 0; i--) {
+            FingerEntry f = fingerTable.get(i);
             if (intervalContains(f.intervalStart, f.intervalEnd, key)) {
                 return f.node;
             }
@@ -72,7 +93,8 @@ public class FingerTable {
     }
 
     @Data
-    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    @AllArgsConstructor
     private static class FingerEntry {
         HashKey intervalStart;
         HashKey intervalEnd;

@@ -21,7 +21,6 @@ public class DhtNodeImpl implements DhtNode {
 
     private final DhtNodeMeta selfMeta;
     private final DhtNodeClient dhtNodeClient;
-    @Setter
     private FingerTable fingerTable;
     private KeyValueStorage storage;
 
@@ -47,10 +46,25 @@ public class DhtNodeImpl implements DhtNode {
     }
 
     public static DhtNode join(HashSpace hashSpace,
+                               DhtNodeMeta selfMeta,
                                DhtNodeAddress joinAddress,
                                DhtNodeClient dhtNodeClient,
                                KeyValueStorage storage) {
-        throw new UnsupportedOperationException();
+        HashKey start = hashSpace.add(selfMeta.getKey(), 1);
+        DhtNodeMeta successor = dhtNodeClient.findSuccessor(new DhtNodeMeta(null, null, joinAddress), start);
+        DhtNodeMeta predecessor = dhtNodeClient.updatePredecessor(successor, selfMeta);
+        FingerTable fingerTable = FingerTable.buildForCluster(hashSpace,
+                selfMeta, successor, predecessor, (hashKey) -> dhtNodeClient.findSuccessor(successor, hashKey));
+        log.info("Generated new finger table for the node (nodeId = {}): {}", selfMeta.getKey(), fingerTable);
+
+
+    }
+
+    @Override
+    public DhtNodeMeta updatePredecessor(DhtNodeMeta predecessor) {
+        DhtNodeMeta oldPredecessor = fingerTable.getPredecessorNode();
+        fingerTable.setPredecessorNode(predecessor);
+        return oldPredecessor;
     }
 
 //    @Override
@@ -81,26 +95,33 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public String getData(HashKey key) {
-        if (fingerTable.isSuccessor(key)) {
+        DhtNodeMeta successor = findSuccessor(key);
+        if (selfMeta.getKey().equals(successor.getKey())) {
             return storage.getData(key);
         }
-        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
-        if (selfMeta.getKey().equals(pred.getKey())) {
-            return dhtNodeClient.getDataFromNode(fingerTable.getImmediateSuccessor(), key);
-        }
-        return dhtNodeClient.getDataFromNode(pred, key);
+        return dhtNodeClient.getDataFromNode(successor, key);
     }
 
     @Override
     public boolean storeData(HashKey key, String value) {
-        if (fingerTable.isSuccessor(key)) {
+        DhtNodeMeta successor = findSuccessor(key);
+        if (selfMeta.getKey().equals(successor.getKey())) {
             return storage.storeData(key, value);
         }
+        return dhtNodeClient.storeDataToNode(successor, key, value);
+    }
+
+    @Override
+    public DhtNodeMeta findSuccessor(HashKey key) {
+        if (fingerTable.isSuccessor(key)) {
+            return selfMeta;
+        }
+
         DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
         if (selfMeta.getKey().equals(pred.getKey())) {
-            return dhtNodeClient.storeDataToNode(fingerTable.getImmediateSuccessor(), key, value);
+            return fingerTable.getImmediateSuccessor();
         }
-        return dhtNodeClient.storeDataToNode(pred, key, value);
+        return dhtNodeClient.findSuccessor(pred, key);
     }
 
 //    @Override
@@ -203,30 +224,12 @@ public class DhtNodeImpl implements DhtNode {
 //        return storedData.keySet();
 //    }
 //
-//    @Override
-//    public int getSuccessor() {
-//        return  fingerTable
-//                .getFingerTable()
-//                .entrySet()
-//                .stream()
-//                .findFirst()
-//                .orElseThrow(() -> new IllegalStateException("Cannot get the successor from the finger table (the first entry is absent)"))
-//                .getValue();
-//    }
 //
 //    @Override
 //    public int getPredecessor() {
 //        return predecessor;
 //    }
 //
-//    private static void becomeResponsibleForNodeData(int nodeId,
-//                                                     int targetNodeId,
-//                                                     TreeMap<Integer, KeyValueStorage> storedData,
-//                                                     TreeMap<Integer, ReadWriteLock> storedDataLocks) {
-//        log.info("Node (nodeId = {}) is now responsible for the key {}", nodeId, targetNodeId);
-//        storedData.put(targetNodeId, new KeyValueInMemoryStorage());
-//        storedDataLocks.put(targetNodeId, new ReentrantReadWriteLock(true));
-//    }
 //
 //    private void removeKeyFromNodeData(int nodeIdToRemove) {
 //        log.info("Node (nodeId = {}) is not responsible for the key {}", nodeId, nodeIdToRemove);
@@ -234,44 +237,5 @@ public class DhtNodeImpl implements DhtNode {
 //        storedDataLocks.remove(nodeIdToRemove);
 //    }
 //
-//    private String getData(int requiredNode, String key) {
-//        Lock readLock = storedDataLocks.get(requiredNode).readLock();
-//        readLock.lock();
-//
-//        String data;
-//        try {
-//            data = storedData.get(requiredNode).getData(key);
-//        } finally {
-//            readLock.unlock();
-//        }
-//        return data;
-//    }
-//
-//    private boolean storeData(int requiredNode, String key, String value) {
-//        Lock writeLock = storedDataLocks.get(requiredNode).writeLock();
-//        writeLock.lock();
-//
-//        boolean result;
-//        try {
-//            result = storedData.get(requiredNode).storeData(key, value);
-//        } finally {
-//            writeLock.unlock();
-//        }
-//        return result;
-//    }
-//
-//    private boolean redirectStoreRequest(String key, String value) {
-//        int successorForKey = fingerTable.lookupSuccessorForKey(key);
-//        log.info("Key `{}` and value `{}` will not be put on the current node (nodeId = {}), redirecting request to the successor node (nodeId = {})",
-//                key, value, nodeId, successorForKey);
-//        return dhtNodeClient.storeDataToNode(successorForKey, key, value);
-//    }
-//
-//    private String redirectGetRequest(String key) {
-//        int successorForKey = fingerTable.lookupSuccessorForKey(key);
-//        log.info("Key `{}` is not located on the current node (nodeId = {}), redirecting request to the successor node (nodeId = {})",
-//                key, nodeId, successorForKey);
-//        return dhtNodeClient.getDataFromNode(successorForKey, key);
-//    }
 
 }

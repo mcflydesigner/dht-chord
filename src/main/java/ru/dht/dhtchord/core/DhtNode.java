@@ -14,7 +14,9 @@ public interface DhtNode {
 
 //    void updateFingerTable(DhtNodeMeta newNode);
 
-//    int getSuccessor();
+    DhtNodeMeta findSuccessor(HashKey key);
+
+    DhtNodeMeta updatePredecessor(DhtNodeMeta dhtNodeMeta);
 //
 //    int getPredecessor();
 //

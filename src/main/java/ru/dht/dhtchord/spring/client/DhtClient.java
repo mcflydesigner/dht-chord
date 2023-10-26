@@ -11,6 +11,10 @@ public interface DhtClient {
 
     boolean storeDataToNode(String key, String value, DhtNodeAddress dhtNodeAddress);
 
+    DhtNodeMeta findSuccessor(String key, DhtNodeAddress dhtNodeAddress);
+
+    DhtNodeMeta updatePredecessor(DhtNodeMeta predecessor, DhtNodeAddress dhtNodeAddress);
+
 //    boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
 //
 //    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
