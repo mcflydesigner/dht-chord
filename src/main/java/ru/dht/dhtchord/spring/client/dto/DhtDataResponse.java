@@ -13,4 +13,8 @@ import lombok.NoArgsConstructor;
 public class DhtDataResponse {
     @JsonProperty("data")
     private String data;
+    @JsonProperty("nodeId")
+    private String nodeId;
+    @JsonProperty("address")
+    private String address;
 }

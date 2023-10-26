@@ -11,7 +11,6 @@ import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 
-import java.security.SecureRandom;
 import java.util.Random;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -117,6 +116,11 @@ public class DhtNodeImpl implements DhtNode {
     }
 
     @Override
+    public DhtNodeMeta getNodeMeta() {
+        return selfNode;
+    }
+
+    @Override
     public DhtNodeMeta getPredecessor() {
         return fingerTable.getPredecessorNode();
     }
@@ -125,93 +129,5 @@ public class DhtNodeImpl implements DhtNode {
     public DhtNodeMeta getSuccessor() {
         return fingerTable.getImmediateSuccessor();
     }
-
-    //    @Override
-//    public synchronized boolean initializeData(Map<Integer, Map<String, String>> data) {
-//        log.info("Transfer of data is started by the successor. Started initialization of node data (nodeId = {})", nodeId);
-//
-//        for (var entry : data.entrySet()) {
-//            int key = entry.getKey();
-//            becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-//
-//            // TODO: add methods putAll() and getAll()
-//            for (var dataEntry : entry.getValue().entrySet()) {
-//                String dataKey = dataEntry.getKey();
-//                String dataValue = dataEntry.getValue();
-//                boolean result = storeData(dataKey, dataValue);
-//
-//                if (!result) {
-//                    log.error("Failed to initialize node data. Failed to insert: key = {} and value = {}",
-//                            dataKey, dataValue);
-//                    return false;
-//                }
-//            }
-//        }
-//
-//        log.info("Transfer of data from the successor is successfully finished. Finished initialization of node data (nodeId = {})",
-//                nodeId);
-//        isDataInitialized = true;
-//        return true;
-//    }
-//
-//
-//    @Override
-//    public synchronized boolean transferDataToNode(int targetNodeId, Set<Integer> requestedKeys) {
-//        // TODO: validate requestedKeys
-//        log.info("Initialization before transfer of data keys ({}) to the node (targetNodeId = {})",
-//                requestedKeys, targetNodeId);
-//
-//        List<Lock> writeLocks = new ArrayList<>(requestedKeys.size());
-//        requestedKeys.stream().map(storedDataLocks::get).forEach(lock -> writeLocks.add(lock.writeLock()));
-//        writeLocks.forEach(Lock::lock);
-//
-//        try {
-//            TreeMap<Integer, KeyValueStorage> data = new TreeMap<>();
-//            for (int key : requestedKeys) {
-//                data.put(key, storedData.get(key));
-//            }
-//            log.info("Initialization completed. Started transfer of data keys ({}) to the node (targetNodeId = {})",
-//                    requestedKeys, targetNodeId);
-//
-//            Map<Integer, Map<String, String>> dataToTransfer = new HashMap<>();
-//            data.forEach((currentNodeId, value) -> dataToTransfer.put(currentNodeId, value.getKeys().stream().collect(Collectors.toMap(
-//                            key -> key,
-//                            value::getData
-//                    ))
-//            ));
-//
-//            boolean result = dhtNodeClient.transferDataToNode(targetNodeId, dataToTransfer);
-//            if (result) {
-//                log.info("Deleting the keys ({}) from the node (nodeId = {}) since transferred to another node (targetNodeId = {})",
-//                        nodeId, requestedKeys, targetNodeId);
-//                requestedKeys.forEach(this::removeKeyFromNodeData);
-//            }
-//
-//            log.info("Finished transfer of keys ({}) from the node (nodeId = {}) to the target node (targetNodeId = {}). Result: {}",
-//                    requestedKeys, nodeId, targetNodeId, result);
-//            return result;
-//        } finally {
-//            writeLocks.forEach(Lock::unlock);
-//        }
-//    }
-//
-//    @Override
-//    public Set<Integer> getStoredKeys() {
-//        return storedData.keySet();
-//    }
-//
-//
-//    @Override
-//    public int getPredecessor() {
-//        return predecessor;
-//    }
-//
-//
-//    private void removeKeyFromNodeData(int nodeIdToRemove) {
-//        log.info("Node (nodeId = {}) is not responsible for the key {}", nodeId, nodeIdToRemove);
-//        storedData.remove(nodeIdToRemove);
-//        storedDataLocks.remove(nodeIdToRemove);
-//    }
-//
 
 }

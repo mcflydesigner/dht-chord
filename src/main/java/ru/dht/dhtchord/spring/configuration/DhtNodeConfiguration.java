@@ -7,20 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
-import ru.dht.dhtchord.core.DhtChordRing;
 import ru.dht.dhtchord.core.DhtNode;
 import ru.dht.dhtchord.core.DhtNodeImpl;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
-import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.core.hash.SHA1HashSpace;
 import ru.dht.dhtchord.core.storage.InMemoryStorage;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 import ru.dht.dhtchord.spring.client.DhtClient;
-
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Configuration("dhtNodeConfiguration")
 public class DhtNodeConfiguration {
@@ -42,12 +36,6 @@ public class DhtNodeConfiguration {
         this.joinAddress = joinAddress;
         this.dhtClient = dhtClient;
     }
-
-//    @Bean
-//    @ConfigurationProperties(prefix = "dht.known-nodes")
-//    Map<String, String> knownNodesConfig() {
-//        return new HashMap<>();
-//    }
 
     @Bean
     HashSpace hashSpace() {
@@ -71,46 +59,15 @@ public class DhtNodeConfiguration {
                 : DhtNodeImpl.join(hashSpace, selfMeta, new DhtNodeAddress(joinAddress), dhtNodeClient, keyValueStorage);
     }
 
-//    @Bean
-//    DhtChordRing dhtChordRing(
-//            DhtNodeMeta selfMeta,
-//            DhtNode dhtNode,
-//            TreeSet<HashKey> knownNodeKeys,
-//            AtomicReference<Map<HashKey, DhtNodeAddress>> nodeAddressesMapRef
-//    ) {
-//        return new DhtChordRing(selfMeta, dhtNode, knownNodeKeys, dhtNodeClient(), nodeAddressesMapRef);
-//    }
 
     @Bean
     DhtNodeMeta selfMeta(HashSpace hashSpace) {
         return new DhtNodeMeta(nodeId, hashSpace.hash(nodeId), new DhtNodeAddress(address));
     }
 
-//    @Bean
-//    TreeSet<HashKey> knownNodeKeys(
-//            AtomicReference<Map<HashKey, DhtNodeAddress>> nodeAddressesMapRef
-//    ) {
-//        return new TreeSet<>(nodeAddressesMapRef.get().keySet());
-//    }
-
     @Bean
     DhtNodeClient dhtNodeClient() {
-        return new DhtNodeClient(dhtClient, null);
+        return new DhtNodeClient(dhtClient);
     }
-
-//    @Bean
-//    AtomicReference<Map<HashKey, DhtNodeAddress>> nodeAddressesMapRef(
-//            HashSpace hashSpace,
-//            DhtNodeMeta selfMeta
-//    ) {
-//        Map<HashKey, DhtNodeAddress> map = knownNodesConfig().entrySet().stream().collect(Collectors.toMap(
-//                e -> hashSpace.hash(e.getKey()),
-//                e -> new DhtNodeAddress(e.getValue())
-//        ));
-//        // Adding current node to the map
-//        map.put(selfMeta.getKey(), selfMeta.getAddress());
-//
-//        return new AtomicReference<>(map);
-//    }
 
 }

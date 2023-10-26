@@ -1,6 +1,5 @@
 package ru.dht.dhtchord.core.hash;
 
-import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import org.springframework.util.StringUtils;
 

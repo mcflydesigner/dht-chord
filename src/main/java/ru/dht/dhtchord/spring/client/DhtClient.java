@@ -3,9 +3,6 @@ package ru.dht.dhtchord.spring.client;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 
-import java.util.Map;
-import java.util.Set;
-
 public interface DhtClient {
     String getDataFromNode(String key, DhtNodeAddress dhtNodeAddress);
 
@@ -18,10 +15,4 @@ public interface DhtClient {
     DhtNodeMeta getPredecessor(DhtNodeAddress dhtNodeAddress);
 
     void notifyAboutPredecessor(DhtNodeMeta predecessor, DhtNodeAddress dhtNodeAddress);
-
-//    boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
-//
-//    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
-//
-//    boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress);
 }

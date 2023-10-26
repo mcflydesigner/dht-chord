@@ -2,7 +2,6 @@ package ru.dht.dhtchord.core.hash;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
