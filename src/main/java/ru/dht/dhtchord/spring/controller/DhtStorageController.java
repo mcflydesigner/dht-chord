@@ -13,17 +13,18 @@ import ru.dht.dhtchord.spring.client.dto.*;
 public class DhtStorageController {
 
     private final DhtNode dhtNode;
+    private final HashSpace hashSpace;
 
     @GetMapping
     public DhtDataResponse getDataByKey(@RequestParam String key) {
-        HashKey hashKey = HashKey.fromString(key);
+        HashKey hashKey = hashSpace.fromString(key);
         String data = dhtNode.getData(hashKey);
         return new DhtDataResponse(data);
     }
 
     @PostMapping
     public DhtStoreResponse storeData(@RequestBody DhtStoreRequest dhtStoreRequest) {
-        HashKey hashKey = HashKey.fromString(dhtStoreRequest.getKey());
+        HashKey hashKey = hashSpace.fromString(dhtStoreRequest.getKey());
         boolean success = dhtNode.storeData(hashKey, dhtStoreRequest.getValue());
         return new DhtStoreResponse(success);
     }

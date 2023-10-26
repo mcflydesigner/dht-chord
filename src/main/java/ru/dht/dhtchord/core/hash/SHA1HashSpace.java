@@ -15,4 +15,16 @@ public class SHA1HashSpace implements HashSpace {
         byte[] hash = Hashing.sha1().hashString(digest, StandardCharsets.UTF_8).asBytes();
         return HashKey.of(hash);
     }
+
+    public static void main(String[] args) {
+        System.out.println(new SHA1HashSpace().hash("hello"));
+    }
+
+    @Override
+    public HashKey fromString(String s) {
+        if (s.length() * 4 != getBitLength()) {
+            throw new IllegalArgumentException("Key has invalid hash space");
+        }
+        return HashKey.fromString(s);
+    }
 }

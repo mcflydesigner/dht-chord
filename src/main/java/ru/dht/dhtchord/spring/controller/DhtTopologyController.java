@@ -16,19 +16,19 @@ import ru.dht.dhtchord.spring.client.dto.DhtNodeRegisterRequest;
 @RequestMapping("/topology")
 public class DhtTopologyController {
 
-    private final DhtChordRing dhtChordRing;
+//    private final DhtChordRing dhtChordRing;
 
-    @PostMapping("/register")
-    public boolean registerNewNode(@RequestBody DhtNodeRegisterRequest nodeJoinRequest) {
-        return dhtChordRing.addNode(nodeJoinRequest.getNodeId(), new DhtNodeAddress(nodeJoinRequest.getAddress()));
-    }
-
-    @PostMapping("/data/transfer")
-    public DhtDataTransferResponse requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
-        return new DhtDataTransferResponse(
-                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getToNodeId(),
-                        dhtDataTransferRequest.getKeys())
-        );
-    }
+//    @PostMapping("/register")
+//    public boolean registerNewNode(@RequestBody DhtNodeRegisterRequest nodeJoinRequest) {
+//        return dhtChordRing.addNode(nodeJoinRequest.getNodeId(), new DhtNodeAddress(nodeJoinRequest.getAddress()));
+//    }
+//
+//    @PostMapping("/data/transfer")
+//    public DhtDataTransferResponse requestDataTransferToNode(@RequestBody DhtDataTransferRequest dhtDataTransferRequest) {
+//        return new DhtDataTransferResponse(
+//                dhtChordRing.requestToTransferDataToNode(dhtDataTransferRequest.getToNodeId(),
+//                        dhtDataTransferRequest.getKeys())
+//        );
+//    }
 
 }

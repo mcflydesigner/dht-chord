@@ -22,7 +22,7 @@ public class HashKey implements Comparable<HashKey> {
         );
     }
 
-    public static HashKey fromString(String s) {
+    static HashKey fromString(String s) {
         return HashKey.of(HexFormat.of().parseHex(s));
     }
 
