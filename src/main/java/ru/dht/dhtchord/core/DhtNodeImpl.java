@@ -85,6 +85,9 @@ public class DhtNodeImpl implements DhtNode {
             return storage.getData(key);
         }
         DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
+        if (selfMeta.getKey().equals(pred.getKey())) {
+            return dhtNodeClient.getDataFromNode(fingerTable.getImmediateSuccessor(), key);
+        }
         return dhtNodeClient.getDataFromNode(pred, key);
     }
 
@@ -94,6 +97,9 @@ public class DhtNodeImpl implements DhtNode {
             return storage.storeData(key, value);
         }
         DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
+        if (selfMeta.getKey().equals(pred.getKey())) {
+            return dhtNodeClient.storeDataToNode(fingerTable.getImmediateSuccessor(), key, value);
+        }
         return dhtNodeClient.storeDataToNode(pred, key, value);
     }
 
