@@ -1,23 +1,22 @@
 package ru.dht.dhtchord.core;
 
+import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
+import ru.dht.dhtchord.core.hash.HashKey;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 public interface DhtNode {
-    String getData(String key);
+    String getData(HashKey key);
 
-    boolean storeData(String key, String value);
+    boolean storeData(HashKey key, String value);
 
-    Set<Integer> getStoredKeys();
+//    void updateFingerTable(DhtNodeMeta newNode);
 
-    boolean initializeData(Map<Integer, Map<String, String>> data);
-
-    void updateFingerTable(TreeSet<Integer> nodes);
-
-    int getSuccessor();
-
-    int getPredecessor();
-
-    boolean transferDataToNode(int targetNodeId, Set<Integer> requestedKeys);
+//    int getSuccessor();
+//
+//    int getPredecessor();
+//
+//    boolean transferDataToNode(int targetNodeId, Set<Integer> requestedKeys);
 }

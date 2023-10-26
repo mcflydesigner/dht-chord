@@ -61,57 +61,57 @@ public class RestTemplateDhtClient implements DhtClient {
         return response.getSuccess();
     }
 
-    @Override
-    public boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress) {
-        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme("http")
-                .host(dhtNodeAddress.getAddress())
-                .path(REGISTER_NODE_URI_PATH)
-                .buildAndExpand();
-
-        HttpEntity<DhtNodeRegisterRequest> entity = new HttpEntity<>(new DhtNodeRegisterRequest(
-                dhtNodeMeta.getNodeId(), dhtNodeMeta.getAddress().getAddress()
-        ));
-        RestTemplate restTemplate = new RestTemplate();
-        DhtNodeRegisterResponse response =
-                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtNodeRegisterResponse.class);
-        return response.getSuccess();
-    }
-
-    @Override
-    public boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress) {
-        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme("http")
-                .host(dhtNodeAddress.getAddress())
-                .path(STORAGE_INIT_URI_PATH)
-                .buildAndExpand();
-
-        HttpEntity<DhtInitDataRequest> entity = new HttpEntity<>(new DhtInitDataRequest(data));
-        RestTemplate restTemplate = new RestTemplate();
-
-        DhtInitDataResponse response =
-                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtInitDataResponse.class);
-        return response.getSuccess();
-    }
-
-    @Override
-    public boolean requestTransferDataToNode(int fromNodeId,
-                                             int toNodeId,
-                                             Set<Integer> keys,
-                                             DhtNodeAddress dhtNodeAddress) {
-        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme("http")
-                .host(dhtNodeAddress.getAddress())
-                .path(REQUEST_DATA_TRANSFER_URI_PATH)
-                .buildAndExpand();
-
-        HttpEntity<DhtDataTransferRequest> entity = new HttpEntity<>(
-                new DhtDataTransferRequest(fromNodeId, toNodeId, keys)
-        );
-        RestTemplate restTemplate = new RestTemplate();
-
-        DhtDataTransferResponse response =
-                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtDataTransferResponse.class);
-        return response.getSuccess();
-    }
+//    @Override
+//    public boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress) {
+//        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+//                .scheme("http")
+//                .host(dhtNodeAddress.getAddress())
+//                .path(REGISTER_NODE_URI_PATH)
+//                .buildAndExpand();
+//
+//        HttpEntity<DhtNodeRegisterRequest> entity = new HttpEntity<>(new DhtNodeRegisterRequest(
+//                dhtNodeMeta.getNodeId(), dhtNodeMeta.getAddress().getAddress()
+//        ));
+//        RestTemplate restTemplate = new RestTemplate();
+//        DhtNodeRegisterResponse response =
+//                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtNodeRegisterResponse.class);
+//        return response.getSuccess();
+//    }
+//
+//    @Override
+//    public boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress) {
+//        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+//                .scheme("http")
+//                .host(dhtNodeAddress.getAddress())
+//                .path(STORAGE_INIT_URI_PATH)
+//                .buildAndExpand();
+//
+//        HttpEntity<DhtInitDataRequest> entity = new HttpEntity<>(new DhtInitDataRequest(data));
+//        RestTemplate restTemplate = new RestTemplate();
+//
+//        DhtInitDataResponse response =
+//                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtInitDataResponse.class);
+//        return response.getSuccess();
+//    }
+//
+//    @Override
+//    public boolean requestTransferDataToNode(int fromNodeId,
+//                                             int toNodeId,
+//                                             Set<Integer> keys,
+//                                             DhtNodeAddress dhtNodeAddress) {
+//        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+//                .scheme("http")
+//                .host(dhtNodeAddress.getAddress())
+//                .path(REQUEST_DATA_TRANSFER_URI_PATH)
+//                .buildAndExpand();
+//
+//        HttpEntity<DhtDataTransferRequest> entity = new HttpEntity<>(
+//                new DhtDataTransferRequest(fromNodeId, toNodeId, keys)
+//        );
+//        RestTemplate restTemplate = new RestTemplate();
+//
+//        DhtDataTransferResponse response =
+//                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtDataTransferResponse.class);
+//        return response.getSuccess();
+//    }
 }

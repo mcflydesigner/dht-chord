@@ -11,9 +11,9 @@ public interface DhtClient {
 
     boolean storeDataToNode(String key, String value, DhtNodeAddress dhtNodeAddress);
 
-    boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
-
-    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
-
-    boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress);
+//    boolean registerNewNode(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress);
+//
+//    boolean requestTransferDataToNode(int fromNodeId, int toNodeId, Set<Integer> keys, DhtNodeAddress dhtNodeAddress);
+//
+//    boolean transferDataToNode(Map<Integer, Map<String, String>> data, DhtNodeAddress dhtNodeAddress);
 }

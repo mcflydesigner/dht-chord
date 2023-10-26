@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
+import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 
@@ -52,30 +53,48 @@ public class DhtNodeImpl implements DhtNode {
         throw new UnsupportedOperationException();
     }
 
+//    @Override
+//    public synchronized void updateFingerTable(TreeSet<Integer> nodes) {
+//        log.info("Node (nodeId = {}) is updating finger table. Current version is {}. New list of nodes: {}",
+//                nodeId, fingerTable.getVersion(), nodes);
+//        Utils.verifyNodesSetIsNotEmpty(nodes);
+//        int predecessorForNodeId = Predecessor.findPredecessor(nodes, nodeId);
+//        if (predecessorForNodeId == nodeId) {
+//            // The current node is responsible for the node IDs in the range (all keys): [0; 2 << m)
+//            for (int key = 0; key < (1 << m); key++) {
+//                if (!storedData.containsKey(key)) {
+//                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+//                }
+//            }
+//        } else {
+//            // Adding the node IDs in the range: (predecessor; nodeId]
+//            for (int key = predecessorForNodeId + 1; key < nodeId; key++) {
+//                if (!storedData.containsKey(key)) {
+//                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
+//                }
+//            }
+//        }
+//        predecessor = predecessorForNodeId;
+//        fingerTable = buildFingerTable(m, nodeId, nodes);
+//        log.info("Node (nodeId = {}) updated finger table. New version is {}", nodeId, fingerTable.getVersion());
+//    }
+
     @Override
-    public synchronized void updateFingerTable(TreeSet<Integer> nodes) {
-        log.info("Node (nodeId = {}) is updating finger table. Current version is {}. New list of nodes: {}",
-                nodeId, fingerTable.getVersion(), nodes);
-        Utils.verifyNodesSetIsNotEmpty(nodes);
-        int predecessorForNodeId = Predecessor.findPredecessor(nodes, nodeId);
-        if (predecessorForNodeId == nodeId) {
-            // The current node is responsible for the node IDs in the range (all keys): [0; 2 << m)
-            for (int key = 0; key < (1 << m); key++) {
-                if (!storedData.containsKey(key)) {
-                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-                }
-            }
-        } else {
-            // Adding the node IDs in the range: (predecessor; nodeId]
-            for (int key = predecessorForNodeId + 1; key < nodeId; key++) {
-                if (!storedData.containsKey(key)) {
-                    becomeResponsibleForNodeData(nodeId, key, storedData, storedDataLocks);
-                }
-            }
+    public String getData(HashKey key) {
+        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
+        if (selfMeta.getKey().equals(pred.getKey())) {
+            return storage.getData(key);
         }
-        predecessor = predecessorForNodeId;
-        fingerTable = buildFingerTable(m, nodeId, nodes);
-        log.info("Node (nodeId = {}) updated finger table. New version is {}", nodeId, fingerTable.getVersion());
+        return dhtNodeClient.getDataFromNode(pred, key);
+    }
+
+    @Override
+    public boolean storeData(HashKey key, String value) {
+        DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
+        if (selfMeta.getKey().equals(pred.getKey())) {
+            return storage.storeData(key, value);
+        }
+        return dhtNodeClient.storeDataToNode(pred, key, value);
     }
 
 //    @Override

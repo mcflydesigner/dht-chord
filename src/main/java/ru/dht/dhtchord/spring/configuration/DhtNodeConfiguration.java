@@ -70,15 +70,15 @@ public class DhtNodeConfiguration {
                 : DhtNodeImpl.join(hashSpace, new DhtNodeAddress(joinAddress), dhtNodeClient, keyValueStorage);
     }
 
-    @Bean
-    DhtChordRing dhtChordRing(
-            DhtNodeMeta selfMeta,
-            DhtNode dhtNode,
-            TreeSet<HashKey> knownNodeKeys,
-            AtomicReference<Map<HashKey, DhtNodeAddress>> nodeAddressesMapRef
-    ) {
-        return new DhtChordRing(selfMeta, dhtNode, knownNodeKeys, dhtNodeClient(), nodeAddressesMapRef);
-    }
+//    @Bean
+//    DhtChordRing dhtChordRing(
+//            DhtNodeMeta selfMeta,
+//            DhtNode dhtNode,
+//            TreeSet<HashKey> knownNodeKeys,
+//            AtomicReference<Map<HashKey, DhtNodeAddress>> nodeAddressesMapRef
+//    ) {
+//        return new DhtChordRing(selfMeta, dhtNode, knownNodeKeys, dhtNodeClient(), nodeAddressesMapRef);
+//    }
 
     @Bean
     DhtNodeMeta selfMeta(HashSpace hashSpace) {
@@ -94,7 +94,7 @@ public class DhtNodeConfiguration {
 
     @Bean
     DhtNodeClient dhtNodeClient() {
-        return new DhtNodeClient(dhtClient, nodeAddressesMapRef());
+        return new DhtNodeClient(dhtClient, null);
     }
 
 //    @Bean

@@ -3,6 +3,8 @@ package ru.dht.dhtchord.spring.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.dht.dhtchord.core.DhtNode;
+import ru.dht.dhtchord.core.hash.HashKey;
+import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.spring.client.dto.*;
 
 @RestController
@@ -14,20 +16,22 @@ public class DhtStorageController {
 
     @GetMapping
     public DhtDataResponse getDataByKey(@RequestParam String key) {
-        String data = dhtNode.getData(key);
+        HashKey hashKey = HashKey.fromString(key);
+        String data = dhtNode.getData(hashKey);
         return new DhtDataResponse(data);
     }
 
     @PostMapping
     public DhtStoreResponse storeData(@RequestBody DhtStoreRequest dhtStoreRequest) {
-        boolean success = dhtNode.storeData(dhtStoreRequest.getKey(), dhtStoreRequest.getValue());
+        HashKey hashKey = HashKey.fromString(dhtStoreRequest.getKey());
+        boolean success = dhtNode.storeData(hashKey, dhtStoreRequest.getValue());
         return new DhtStoreResponse(success);
     }
 
-    @PostMapping("/initialize")
-    public DhtInitDataResponse initializeStorageData(@RequestBody DhtInitDataRequest dhtInitDataRequest) {
-        boolean success = dhtNode.initializeData(dhtInitDataRequest.getData());
-        return new DhtInitDataResponse(success);
-    }
+//    @PostMapping("/initialize")
+//    public DhtInitDataResponse initializeStorageData(@RequestBody DhtInitDataRequest dhtInitDataRequest) {
+//        boolean success = dhtNode.initializeData(dhtInitDataRequest.getData());
+//        return new DhtInitDataResponse(success);
+//    }
 
 }

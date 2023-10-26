@@ -1,11 +1,13 @@
 package ru.dht.dhtchord.core.storage;
 
+import ru.dht.dhtchord.core.hash.HashKey;
+
 import java.util.Set;
 
 public interface KeyValueStorage {
-    boolean storeData(String key, String value);
+    boolean storeData(HashKey key, String value);
 
-    String getData(String key);
+    String getData(HashKey key);
 
-    Set<String> getKeys();
+    Set<HashKey> getKeys();
 }

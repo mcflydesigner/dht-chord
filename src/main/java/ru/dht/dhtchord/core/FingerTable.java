@@ -1,9 +1,7 @@
 package ru.dht.dhtchord.core;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
@@ -18,15 +16,15 @@ public class FingerTable {
     private static final AtomicInteger atomicCounter = new AtomicInteger(0);
 
     private final HashSpace hashSpace;
-    private final HashKey selfKey;
+    private final DhtNodeMeta selfNode;
     private DhtNodeMeta predecessorNode;
     @Getter
-    private final List<DhtNodeMeta> fingerTable;
+    private final LinkedList<FingerEntry> fingerTable;
     @Getter
     private final int version;
 
     public DhtNodeMeta getImmediateSuccessor() {
-        return fingerTable.get(0);
+        return fingerTable.isEmpty() ? selfNode : fingerTable.get(0).getNode();
     }
 
 //    public static FingerTable buildTable(HashSpace hashSpace, HashKey selfKey,
@@ -41,36 +39,38 @@ public class FingerTable {
 //    }
 
     public static FingerTable buildForSingleNode(HashSpace hashSpace, DhtNodeMeta selfNode) {
-        LinkedList<DhtNodeMeta> fingers = new LinkedList<>();
-        fingers.add(selfNode);
         return new FingerTable(
                 hashSpace,
-                selfNode.getKey(),
                 selfNode,
-                fingers,
+                selfNode,
+                new LinkedList<>(),
                 atomicCounter.incrementAndGet()
         );
     }
 
-    private static DhtNodeMeta successor(HashKey key, TreeMap<HashKey, DhtNodeMeta> knownNodes) {
-
+    public DhtNodeMeta findClosestPredecessor(HashKey key) {
+        for (Iterator<FingerEntry> it = fingerTable.descendingIterator(); it.hasNext(); ) {
+            FingerEntry f = it.next();
+            if (intervalContains(f.intervalStart, f.intervalEnd, key)) {
+                return f.node;
+            }
+        }
+        return selfNode;
     }
 
-    public int lookupSuccessorForKey(String key) {
-       int nodeIdForKey = HashUtils.getNodeIdForKey(key, m);
-       int maxLess = nodes.first();
-       // TODO: reversed iterator faster?
-       for (var fingerTableEntry : fingerTable.entrySet()) {
-           int k = fingerTableEntry.getKey();
-           int successor = fingerTableEntry.getValue();
-
-           if (k == nodeIdForKey) {
-               return successor;
-           } else if (nodeIdForKey > k) {
-               maxLess = k;
-           }
-       }
-       return maxLess;
+    private static boolean intervalContains(HashKey start, HashKey end, HashKey key) {
+        if (start.compareTo(end) < 0) {
+            return start.compareTo(key) <= 0 && key.compareTo(end) < 0;
+        } else {
+            return start.compareTo(key) <= 0 || key.compareTo(end) < 0;
+        }
     }
 
+    @Data
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    private static class FingerEntry {
+        HashKey intervalStart;
+        HashKey intervalEnd;
+        DhtNodeMeta node;
+    }
 }
