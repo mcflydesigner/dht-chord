@@ -26,6 +26,7 @@ import java.util.Objects;
 public class RestTemplateDhtClient implements DhtClient {
 
     private final HashSpace hashSpace;
+    private final RestTemplate restTemplate;
 
     private static final String STORAGE_URI_PATH = "/storage";
 
@@ -49,7 +50,6 @@ public class RestTemplateDhtClient implements DhtClient {
                 .query("key={key}")
                 .buildAndExpand(key);
 
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<DhtDataResponse> response =
                 restTemplate.exchange(uriComponents.toUriString(), HttpMethod.GET, null, dhtDataResponseTypeRef);
         return Objects.requireNonNull(response.getBody()).getData();
@@ -64,7 +64,6 @@ public class RestTemplateDhtClient implements DhtClient {
                 .buildAndExpand();
 
         HttpEntity<DhtStoreRequest> entity = new HttpEntity<>(new DhtStoreRequest(key, value));
-        RestTemplate restTemplate = new RestTemplate();
 
         DhtStoreResponse response =
                 restTemplate.postForObject(uriComponents.toUriString(), entity, DhtStoreResponse.class);
@@ -80,7 +79,6 @@ public class RestTemplateDhtClient implements DhtClient {
                 .query("key={key}")
                 .buildAndExpand(key);
 
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<DhtNodeMetaDto> response =
                 restTemplate.exchange(uriComponents.toUriString(), HttpMethod.GET, null, dhtNodeMetaDtoRef);
         DhtNodeMetaDto nodeMetaDto = response.getBody();
@@ -101,7 +99,6 @@ public class RestTemplateDhtClient implements DhtClient {
         HttpEntity<DhtNodeMetaDto> entity = new HttpEntity<>(
                 new DhtNodeMetaDto(predecessor.getNodeId(), predecessor.getKey().toString(), predecessor.getAddress().getAddress())
         );
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<DhtNodeMetaDto> response =
                 restTemplate.exchange(uriComponents.toUriString(), HttpMethod.PUT, entity, dhtNodeMetaDtoRef);
         DhtNodeMetaDto predecessorDto = response.getBody();
@@ -120,7 +117,6 @@ public class RestTemplateDhtClient implements DhtClient {
                 .path(GET_PREDECESSOR_URI_PATH)
                 .buildAndExpand();
 
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<DhtNodeMetaDto> response =
                 restTemplate.exchange(uriComponents.toUriString(), HttpMethod.GET, null, dhtNodeMetaDtoRef);
         DhtNodeMetaDto predecessorDto = response.getBody();
@@ -142,7 +138,6 @@ public class RestTemplateDhtClient implements DhtClient {
         HttpEntity<DhtNodeMetaDto> entity = new HttpEntity<>(
                 new DhtNodeMetaDto(predecessor.getNodeId(), predecessor.getKey().toString(), predecessor.getAddress().getAddress())
         );
-        RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.postForObject(uriComponents.toUriString(), entity, Object.class);
     }
