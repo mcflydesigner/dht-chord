@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class DhtChordApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DhtChordApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DhtChordApplication.class, args);
+    }
 
 }
