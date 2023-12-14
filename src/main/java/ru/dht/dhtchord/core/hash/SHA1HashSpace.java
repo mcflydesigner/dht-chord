@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 public class SHA1HashSpace implements HashSpace {
     @Override
     public int getBitLength() {
-        return Hashing.sha1().bits();
+        return Hashing.sha1().bits(); // 160 bits
     }
 
     @Override

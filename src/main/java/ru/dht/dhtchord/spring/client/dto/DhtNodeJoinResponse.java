@@ -6,15 +6,17 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DhtNodeMetaDto {
+public class DhtNodeJoinResponse {
+    @JsonProperty("data")
+    private Map<String, String> data;
     @JsonProperty("nodeId")
     private String nodeId;
-    @JsonProperty("key")
-    private String key;
     @JsonProperty("address")
     private String address;
 }

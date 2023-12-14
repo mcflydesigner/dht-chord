@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DhtNodeMetaDto {
+public class DhtNodeJoinRequest {
     @JsonProperty("nodeId")
     private String nodeId;
     @JsonProperty("key")

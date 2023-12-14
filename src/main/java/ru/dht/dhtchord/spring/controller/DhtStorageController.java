@@ -33,5 +33,4 @@ public class DhtStorageController {
         DhtNodeMeta node = dhtNode.getNodeMeta();
         return new DhtStoreResponse(success, node.getNodeId(), node.getAddress().getAddress());
     }
-
 }

@@ -9,5 +9,7 @@ public interface KeyValueStorage {
 
     String getData(HashKey key);
 
+    String removeData(HashKey key);
+
     Set<HashKey> getKeys();
 }

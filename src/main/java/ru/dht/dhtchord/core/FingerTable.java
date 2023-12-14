@@ -131,6 +131,10 @@ public class FingerTable {
         }
     }
 
+    /**
+       * Working interval: [intervalStart; intervalEnd)
+       * node: first node >= finger[k].start
+     */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @AllArgsConstructor

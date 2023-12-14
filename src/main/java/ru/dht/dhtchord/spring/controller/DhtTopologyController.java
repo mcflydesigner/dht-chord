@@ -8,7 +8,12 @@ import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.DhtNode;
 import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
+import ru.dht.dhtchord.spring.client.dto.DhtNodeJoinConfirmResponse;
+import ru.dht.dhtchord.spring.client.dto.DhtNodeJoinRequest;
+import ru.dht.dhtchord.spring.client.dto.DhtNodeJoinResponse;
 import ru.dht.dhtchord.spring.client.dto.DhtNodeMetaDto;
+
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -18,6 +23,22 @@ public class DhtTopologyController {
 
     private HashSpace hashSpace;
     private DhtNode dhtNode;
+
+    @GetMapping("/join")
+    public DhtNodeJoinResponse joinNode(DhtNodeJoinRequest joinRequest) {
+        HashKey nodeKey = hashSpace.fromString(joinRequest.getKey());
+        DhtNodeMeta dhtNodeMeta = new DhtNodeMeta(joinRequest.getNodeId(), nodeKey, new DhtNodeAddress(joinRequest.getAddress()));
+        Map<String, String> data = dhtNode.getDataToTransfer(dhtNodeMeta);
+        return new DhtNodeJoinResponse(data, dhtNode.getNodeMeta().getNodeId(), dhtNode.getNodeMeta().getAddress().getAddress());
+    }
+
+    @PostMapping("/join/confirm")
+    public DhtNodeJoinConfirmResponse confirmJoinNode(@RequestBody DhtNodeJoinRequest joinRequest) {
+        HashKey nodeKey = hashSpace.fromString(joinRequest.getKey());
+        DhtNodeMeta dhtNodeMeta = new DhtNodeMeta(joinRequest.getNodeId(), nodeKey, new DhtNodeAddress(joinRequest.getAddress()));
+        boolean success = dhtNode.confirmDataTransfer(dhtNodeMeta);
+        return new DhtNodeJoinConfirmResponse(success);
+    }
 
     @GetMapping("/successor")
     public DhtNodeMetaDto findSuccessor(@RequestParam(required = false) String key) {
