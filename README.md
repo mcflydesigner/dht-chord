@@ -24,7 +24,7 @@ through the VM options:
 -Dserver.port=<port> # Server node port
 -Ddht.node.id=<id> # Server node ID (optional)
 -Ddht.node.address="<host>:<port>" # Current server node address 
--Ddht.node.joinAddress="<host>:<port>" # Arbitrary node's number of the cluster topology (pass empty iff it is the first node of the cluster)  
+-Ddht.node.join.address="<host>:<port>" # Arbitrary node's number of the cluster topology (pass empty iff it is the first node of the cluster)  
 -Ddht.node.security.username="<login>" # Username for basic auth (used by nodes in communication)
 -Ddht.node.security.password="<password>" # Password for basic auth (used by nodes in communication)
 ```

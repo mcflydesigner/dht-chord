@@ -26,7 +26,7 @@ public class DhtNodeConfiguration {
 
     public DhtNodeConfiguration(@Value("${dht.node.id}") String nodeId,
                                 @Value("${dht.node.address}") String address,
-                                @Value("${dht.node.joinAddress}") String joinAddress,
+                                @Value("${dht.node.join.address}") String joinAddress,
                                 @Lazy DhtClient dhtClient) {
         if (Strings.isBlank(address)) {
             throw new IllegalArgumentException("Address must be present");
