@@ -2,6 +2,7 @@ package ru.dht.dhtchord.core.storage;
 
 import ru.dht.dhtchord.core.hash.HashKey;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface KeyValueStorage {
@@ -12,4 +13,6 @@ public interface KeyValueStorage {
     String removeData(HashKey key);
 
     Set<HashKey> getKeys();
+
+    Map<HashKey, String> getEntries();
 }

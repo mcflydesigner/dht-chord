@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString
 public class FingerTable {
 
     private static final AtomicInteger atomicCounter = new AtomicInteger(0);
@@ -129,6 +128,34 @@ public class FingerTable {
         } else {
             return start.compareTo(key) < 0 || key.compareTo(end) <= 0;
         }
+    }
+
+    @Override
+    public String toString() {
+        char delim = '|';
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n--------------------");
+        for (int i = 0; i < fingerTable.size(); i++) {
+            sb.append('\n');
+            sb.append(delim);
+            sb.append(" [ ");
+            sb.append(fingerTable.get(i).intervalStart);
+            sb.append(" ; ");
+            sb.append(fingerTable.get(i).intervalEnd);
+            sb.append(" ) ");
+            sb.append(delim);
+            sb.append(' ');
+            sb.append(fingerTable.get(i).getNode());
+            sb.append(' ');
+            sb.append(delim);
+            sb.append(' ');
+            sb.append(i);
+            sb.append(' ');
+            sb.append(delim);
+        }
+        sb.append("\n--------------------");
+        return sb.toString();
     }
 
     /**

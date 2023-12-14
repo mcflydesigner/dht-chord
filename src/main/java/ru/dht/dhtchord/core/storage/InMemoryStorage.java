@@ -29,4 +29,9 @@ public class InMemoryStorage implements KeyValueStorage {
     public Set<HashKey> getKeys() {
         return storage.keySet();
     }
+
+    @Override
+    public Map<HashKey, String> getEntries() {
+        return storage;
+    }
 }
