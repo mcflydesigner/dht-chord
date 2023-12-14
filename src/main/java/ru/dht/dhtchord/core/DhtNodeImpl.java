@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.connection.DhtNodeClient;
@@ -11,7 +12,9 @@ import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.core.hash.HashSpace;
 import ru.dht.dhtchord.core.storage.KeyValueStorage;
 
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
@@ -22,6 +25,7 @@ public class DhtNodeImpl implements DhtNode {
 
     private final DhtNodeMeta selfNode;
     private final DhtNodeClient dhtNodeClient;
+    private final HashSpace hashSpace;
     private FingerTable fingerTable;
     private KeyValueStorage storage;
 
@@ -31,7 +35,7 @@ public class DhtNodeImpl implements DhtNode {
                                           KeyValueStorage storage) {
         FingerTable fingerTable = FingerTable.buildForSingleNode(hashSpace, selfMeta);
         log.info("Generated new finger table for the node (nodeId = {}): {}", selfMeta.getKey(), fingerTable);
-        return new DhtNodeImpl(selfMeta, dhtNodeClient, fingerTable, storage);
+        return new DhtNodeImpl(selfMeta, dhtNodeClient, hashSpace, fingerTable, storage);
     }
 
     public static DhtNode join(HashSpace hashSpace,
@@ -41,17 +45,32 @@ public class DhtNodeImpl implements DhtNode {
                                KeyValueStorage storage) {
         HashKey start = hashSpace.add(selfMeta.getKey(), 1);
         DhtNodeMeta successor = dhtNodeClient.findSuccessor(new DhtNodeMeta(null, null, joinAddress), start);
-        DhtNodeMeta predecessor = dhtNodeClient.updatePredecessor(successor, selfMeta);
+        transferData(hashSpace, selfMeta, successor, dhtNodeClient, storage);
+        DhtNodeMeta predecessor =  dhtNodeClient.updatePredecessor(successor, selfMeta);
         FingerTable fingerTable = FingerTable.buildForCluster(hashSpace,
                 selfMeta, successor, predecessor, (hashKey) -> dhtNodeClient.findSuccessor(successor, hashKey));
         log.info("Generated new finger table for the node (nodeId = {}): {}", selfMeta.getKey(), fingerTable);
-        return new DhtNodeImpl(selfMeta, dhtNodeClient, fingerTable, storage);
+        return new DhtNodeImpl(selfMeta, dhtNodeClient, hashSpace, fingerTable, storage);
+    }
+
+    private static void transferData(HashSpace hashSpace, DhtNodeMeta selfMeta, DhtNodeMeta successor,
+                                     DhtNodeClient dhtNodeClient, KeyValueStorage storage) {
+        log.info("Requested to transfer data from the successor {}", successor);
+        Map<String, String> data = dhtNodeClient.getDataToTransfer(successor, selfMeta);
+        log.info("Successfully transferred data from the successor (amount: {}): {}", data.size(), data);
+        data.entrySet().stream()
+                .filter(e -> e.getValue() != null)
+                .forEach(e -> storage.storeData(hashSpace.fromString(e.getKey()), e.getValue()));
+        dhtNodeClient.confirmDataTransfer(successor, selfMeta);
+        log.info("Successfully confirmed data transfer to the successor: {}", data);
+        log.info("Finished transfer of the data from the successor {}", successor);
     }
 
     @Override
     public DhtNodeMeta updatePredecessor(DhtNodeMeta predecessor) {
         DhtNodeMeta oldPredecessor = fingerTable.getPredecessorNode();
         fingerTable.setPredecessorNode(predecessor);
+        log.info("Updated node predecessor. Old value: {}. New value: {}", oldPredecessor, predecessor);
         return oldPredecessor;
     }
 
@@ -84,11 +103,45 @@ public class DhtNodeImpl implements DhtNode {
         log.info("Looking the key {} on the node {}", key, selfNode.getNodeId());
         DhtNodeMeta successor = findSuccessor(key);
         if (selfNode.getKey().equals(successor.getKey())) {
-            log.info("The key {} is found locally on the node {}", key, selfNode.getNodeId());
+            log.info("The key {} belongs to the node {}", key, selfNode.getNodeId());
             return storage.getData(key);
         }
-        log.info("The current node {} found successor for the key: succ({}) = {}", key, selfNode.getNodeId(), successor.getNodeId());
+        log.info("The current node {} found successor for the key: succ({}) = {}", selfNode.getNodeId(), key, successor.getNodeId());
         return dhtNodeClient.getDataFromNode(successor, key);
+    }
+
+    @Override
+    public Map<String, String> getDataToTransfer(DhtNodeMeta dhtNodeMeta) {
+        validateJoiningNode(dhtNodeMeta);
+
+        Pair<HashKey, HashKey> keyRange = getKeysRangeToTransfer(dhtNodeMeta);
+        HashKey rangeStart = keyRange.getLeft();
+        HashKey rangeEnd = keyRange.getRight();
+        log.info("Node {} requested to transfer data. Key range is: [{}, {}]",
+                dhtNodeMeta.getNodeId(), rangeStart, rangeEnd);
+
+        Map<String, String> result =  storage.getEntries().entrySet().stream()
+                .filter(entry -> intervalContains(rangeStart, rangeEnd, entry.getKey()))
+                .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
+        log.info("Transferring data to node {}: {}", dhtNodeMeta.getNodeId(), result);
+        return result;
+    }
+
+    @Override
+    public boolean confirmDataTransfer(DhtNodeMeta dhtNodeMeta) {
+        validateJoiningNode(dhtNodeMeta);
+
+        Pair<HashKey, HashKey> keyRange = getKeysRangeToTransfer(dhtNodeMeta);
+        HashKey rangeStart = keyRange.getLeft();
+        HashKey rangeEnd = keyRange.getRight();
+        log.info("Node {} finished data transfer. Key range to be removed from local storage is: [{}, {}]",
+                dhtNodeMeta.getNodeId(), rangeStart, rangeEnd);
+
+        storage.getKeys().stream()
+                .filter(key -> intervalContains(rangeStart, rangeEnd, key))
+                .peek(key -> log.info("Removing key {} from local storage", key))
+                .forEach(key -> storage.removeData(key));
+        return true;
     }
 
     @Override
@@ -130,4 +183,29 @@ public class DhtNodeImpl implements DhtNode {
         return fingerTable.getImmediateSuccessor();
     }
 
+    private void validateJoiningNode(DhtNodeMeta dhtNodeMeta) {
+        DhtNodeMeta predecessor = getPredecessor();
+        HashKey nodeKey = dhtNodeMeta.getKey();
+        if (!predecessor.equals(selfNode) && (nodeKey.compareTo(predecessor.getKey()) < 1 || selfNode.getKey().compareTo(dhtNodeMeta.getKey()) < 1)) {
+            throw new IllegalArgumentException(
+                    String.format("Join node with id = %s failed to join since the node key is not in range (predecessorKey, currentNodeKey)",
+                            dhtNodeMeta.getNodeId())
+            );
+        }
+    }
+
+    private Pair<HashKey, HashKey> getKeysRangeToTransfer(DhtNodeMeta dhtNodeMeta) {
+        DhtNodeMeta predecessor = getPredecessor();
+        HashKey rangeStart = hashSpace.add(predecessor.getKey(), 1);
+        HashKey rangeEnd = dhtNodeMeta.getKey();
+        return Pair.of(rangeStart, rangeEnd);
+    }
+
+    private static boolean intervalContains(HashKey start, HashKey end, HashKey key) {
+        if (start.compareTo(end) < 0) {
+            return start.compareTo(key) <= 0 && key.compareTo(end) <= 0;
+        } else {
+            return start.compareTo(key) <= 0 || key.compareTo(end) <= 0;
+        }
+    }
 }

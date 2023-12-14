@@ -21,7 +21,17 @@ public class InMemoryStorage implements KeyValueStorage {
     }
 
     @Override
+    public String removeData(HashKey key) {
+        return storage.remove(key);
+    }
+
+    @Override
     public Set<HashKey> getKeys() {
         return storage.keySet();
+    }
+
+    @Override
+    public Map<HashKey, String> getEntries() {
+        return storage;
     }
 }

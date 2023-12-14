@@ -13,11 +13,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.dht.dhtchord.common.dto.client.DhtNodeAddress;
 import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.hash.HashSpace;
-import ru.dht.dhtchord.spring.client.dto.DhtDataResponse;
-import ru.dht.dhtchord.spring.client.dto.DhtNodeMetaDto;
-import ru.dht.dhtchord.spring.client.dto.DhtStoreRequest;
-import ru.dht.dhtchord.spring.client.dto.DhtStoreResponse;
+import ru.dht.dhtchord.spring.client.dto.*;
 
+import java.util.Map;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -34,12 +32,15 @@ public class RestTemplateDhtClient implements DhtClient {
     private static final String GET_PREDECESSOR_URI_PATH = "/topology/predecessor";
     private static final String SET_PREDECESSOR_URI_PATH = "/topology/predecessor";
     private static final String FIND_SUCCESSOR_URI_PATH = "/topology/successor";
+    private static final String JOIN_URI_PATH = "/topology/join";
+    private static final String JOIN_CONFIRM_URI_PATH = "/topology/join/confirm";
 
     private final static ParameterizedTypeReference<DhtDataResponse> dhtDataResponseTypeRef =
             new ParameterizedTypeReference<DhtDataResponse>() {};
-
     private final static ParameterizedTypeReference<DhtNodeMetaDto> dhtNodeMetaDtoRef =
             new ParameterizedTypeReference<DhtNodeMetaDto>() {};
+    private final static ParameterizedTypeReference<DhtNodeJoinResponse> dhtNodeJoinResponseTypeRef =
+            new ParameterizedTypeReference<DhtNodeJoinResponse>() {};
 
     @Override
     public String getDataFromNode(String key, DhtNodeAddress dhtNodeAddress) {
@@ -140,6 +141,38 @@ public class RestTemplateDhtClient implements DhtClient {
         );
 
         restTemplate.postForObject(uriComponents.toUriString(), entity, Object.class);
+    }
+
+    @Override
+    public Map<String, String> getDataToTransfer(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress) {
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host(dhtNodeAddress.getAddress())
+                .path(JOIN_URI_PATH)
+                .query("nodeId={nodeId}&key={key}&address={address}")
+                .buildAndExpand(dhtNodeMeta.getNodeId(), dhtNodeMeta.getKey().toString(), dhtNodeMeta.getAddress().getAddress());
+
+        ResponseEntity<DhtNodeJoinResponse> response = restTemplate.exchange(uriComponents.toUriString(),
+                HttpMethod.GET, null, dhtNodeJoinResponseTypeRef);
+        return response.getBody().getData();
+    }
+
+    @Override
+    public boolean confirmDataTransfer(DhtNodeMeta dhtNodeMeta, DhtNodeAddress dhtNodeAddress) {
+        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                .scheme("http")
+                .host(dhtNodeAddress.getAddress())
+                .path(JOIN_CONFIRM_URI_PATH)
+                .buildAndExpand();
+
+        HttpEntity<DhtNodeJoinRequest> entity = new HttpEntity<>(
+                new DhtNodeJoinRequest(
+                        dhtNodeMeta.getNodeId(), dhtNodeMeta.getKey().toString(), dhtNodeMeta.getAddress().getAddress()
+                )
+        );
+        DhtNodeJoinConfirmResponse response =
+                restTemplate.postForObject(uriComponents.toUriString(), entity, DhtNodeJoinConfirmResponse.class);
+        return response.isSuccess();
     }
 
 }

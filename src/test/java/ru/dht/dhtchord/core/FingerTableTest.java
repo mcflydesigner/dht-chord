@@ -10,7 +10,7 @@ import ru.dht.dhtchord.core.hash.SHA1HashSpace;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FingerTableTests {
+public class FingerTableTest {
 
     private static HashSpace hashSpace = new SHA1HashSpace();
     private static final DhtNodeMeta node = new DhtNodeMeta("0", hashSpace.fromString("1234"), new DhtNodeAddress("localhost"));

@@ -12,26 +12,32 @@ import java.util.Objects;
 public class HashKey implements Comparable<HashKey> {
     private final byte[] value;
     private final BigInteger intValue;
+    private final HashSpace hashSpace;
 
-    static HashKey of(BigInteger intValue, int bits) {
+    static HashKey of(BigInteger intValue, int bits, HashSpace hashSpace) {
         // intValue - 160 bit / 20 byte
         BigInteger m = BigInteger.ONE.shiftLeft(bits); // m - 161 bit / 21 byte
         intValue = intValue.mod(m); // 20b mod 21b = 21b
-        return of(intValue.toByteArray());
+        return of(intValue.toByteArray(), hashSpace);
     }
 
-    static HashKey of(byte[] bytes) {
+    static HashKey of(byte[] bytes, HashSpace hashSpace) {
         if (Objects.isNull(bytes)) {
             throw new IllegalArgumentException();
         }
+
+        byte[] bigIntegerBytes = new byte[bytes.length + 1];
+        bigIntegerBytes[0] = 0; // Defer from negative BigInteger numbers
+        System.arraycopy(bytes, 0, bigIntegerBytes, 1, bytes.length);
         return new HashKey(
                 bytes,
-                new BigInteger(bytes)
+                new BigInteger(bigIntegerBytes),
+                hashSpace
         );
     }
 
-    static HashKey fromString(String s) {
-        return HashKey.of(HexFormat.of().parseHex(s));
+    static HashKey fromString(String s, HashSpace hashSpace) {
+        return HashKey.of(HexFormat.of().parseHex(s), hashSpace);
     }
 
     BigInteger getIntValue() {
@@ -39,7 +45,7 @@ public class HashKey implements Comparable<HashKey> {
     }
 
     public String toString() {
-        return StringUtils.trimLeadingCharacter(HexFormat.of().formatHex(value), '0');
+        return hashSpace.toString(value);
     }
 
     @Override

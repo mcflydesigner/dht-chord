@@ -5,6 +5,8 @@ import ru.dht.dhtchord.common.dto.client.DhtNodeMeta;
 import ru.dht.dhtchord.core.hash.HashKey;
 import ru.dht.dhtchord.spring.client.DhtClient;
 
+import java.util.Map;
+
 @AllArgsConstructor
 public class DhtNodeClient {
 
@@ -32,5 +34,13 @@ public class DhtNodeClient {
 
     public void notifyAboutPredecessor(DhtNodeMeta predecessor, DhtNodeMeta node) {
         dhtClient.notifyAboutPredecessor(predecessor, node.getAddress());
+    }
+
+    public Map<String, String> getDataToTransfer(DhtNodeMeta successor, DhtNodeMeta node) {
+        return dhtClient.getDataToTransfer(node, successor.getAddress());
+    }
+
+    public boolean confirmDataTransfer(DhtNodeMeta successor, DhtNodeMeta node) {
+        return dhtClient.confirmDataTransfer(node, successor.getAddress());
     }
 }

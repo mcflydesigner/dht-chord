@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class DhtStoreRequest {
     @JsonProperty("key")
     private String key;
-
     @JsonProperty("value")
     private String value;
 }

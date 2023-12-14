@@ -8,4 +8,5 @@ public interface HashSpace {
     HashKey fromString(String s);
     HashKey add(HashKey hashKey, long i);
     HashKey add(HashKey hashKey, BigInteger i);
+    String toString(byte[] value);
 }
