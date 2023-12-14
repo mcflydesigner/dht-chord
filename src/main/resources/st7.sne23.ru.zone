@@ -1,0 +1,17 @@
+$ORIGIN st7.sne23.ru.
+$TTL 86400
+
+; start of authority, required for every new DNS zone
+st7.sne23.ru.	IN	SOA	ns.st7.sne23.ru. mksen.st7.sne23.ru. ( 2020091025 7200 3600 1209600 3600 )
+@		IN	NS	ns    ; where to find nameserver for the zone
+; mail server records
+@		IN	MX	10 mail.st7.sne23.ru.
+@		IN	MX	20 webmail.st7.sne23.ru.
+; aliases
+www		IN	CNAME	st7.sne23.ru.
+ftp		IN	CNAME	st7.sne23.ru.
+; actual IPv4 addresses (point to a single server on our private net)
+@		IN	A	10.0.2.4
+ns		IN	A	10.0.2.4
+mail		IN	A	10.0.2.4
+webmail		IN	A	10.0.2.4
