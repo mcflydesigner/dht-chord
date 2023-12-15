@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Objects;
 
@@ -24,17 +25,18 @@ public class HashKey implements Comparable<HashKey> {
     static HashKey of(byte[] bytes, HashSpace hashSpace) {
         int byteLen = hashSpace.getBitLength() / 8;
         if (Objects.isNull(bytes)
-                || bytes.length < byteLen
-                || bytes.length > byteLen + 1) {
-            throw new IllegalArgumentException();
+                || bytes.length > byteLen + 1
+                || bytes.length == byteLen + 1 && bytes[0] != 0) {
+            throw new IllegalArgumentException(Arrays.toString(bytes));
         }
 
-        // always add one zero byte
         byte[] bigIntegerBytes = bytes;
-        if (bytes.length == byteLen) {
+        // make the length always 21 byte (first byte 0)
+        if (bytes.length <= byteLen) {
             bigIntegerBytes = new byte[bytes.length + 1];
             bigIntegerBytes[0] = 0; // Defer from negative BigInteger numbers
-            System.arraycopy(bytes, 0, bigIntegerBytes, 1, bytes.length);
+            System.arraycopy(bytes, 0,
+                    bigIntegerBytes, bigIntegerBytes.length - bytes.length, bytes.length);
         }
         return new HashKey(
                 bigIntegerBytes,
