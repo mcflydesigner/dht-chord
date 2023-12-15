@@ -67,3 +67,37 @@
         ports:
           - "8080:8080"
       with_sequence: count={{ container_count }}
+
+      - pause:
+          seconds: 20
+
+      - name: Create default containers
+      when: inventory_hostname == 'server2'
+      community.docker.docker_container:
+        name: "{{ default_container_name }}{{ item }}"
+        image: "{{ default_container_image }}"
+        command: "{{ default_container_command }}"
+        env:
+          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+        state: started
+        restart: true
+        ports:
+          - "8080:8080"
+      with_sequence: count={{ container_count }}
+
+      - pause:
+          seconds: 20
+      
+      - name: Create default containers
+      when: inventory_hostname == 'server3'
+      community.docker.docker_container:
+        name: "{{ default_container_name }}{{ item }}"
+        image: "{{ default_container_image }}"
+        command: "{{ default_container_command }}"
+        env:
+          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+        state: started
+        restart: true
+        ports:
+          - "8080:8080"
+      with_sequence: count={{ container_count }}
