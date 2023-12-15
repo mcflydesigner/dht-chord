@@ -9,6 +9,9 @@
     default_container_command: java -jar /app/app.jar
 
   tasks:
+    - name: Show Inventory Hostname
+      debug:
+        msg: "{{ inventory_hostname }}"
     - name: Install aptitude
       apt:
         name: aptitude
