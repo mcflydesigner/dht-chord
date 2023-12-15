@@ -37,12 +37,12 @@ public class SHA1HashSpace implements HashSpace {
 
     @Override
     public HashKey add(HashKey hashKey, long i) {
-        return HashKey.of(hashKey.getIntValue().add(BigInteger.valueOf(i)), getBitLength(), this);
+        return HashKey.of(hashKey.getIntValue().add(BigInteger.valueOf(i)), this);
     }
 
     @Override
     public HashKey add(HashKey hashKey, BigInteger i) {
-        return HashKey.of(hashKey.getIntValue().add(i), getBitLength(), this);
+        return HashKey.of(hashKey.getIntValue().add(i), this);
     }
 
     @Override

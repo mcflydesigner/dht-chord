@@ -90,7 +90,7 @@ public class FingerTable {
     public DhtNodeMeta findClosestPredecessor(HashKey key) {
         for (int i = fingerTable.size() - 1; i >= 0; i--) {
             FingerEntry f = fingerTable.get(i);
-            if (intervalContainsLeft(f.intervalStart, f.intervalEnd, key)) {
+            if (intervalContainsLeft(selfNode.getKey(), key, f.node.getKey())) {
                 return f.node;
             }
         }
@@ -135,6 +135,9 @@ public class FingerTable {
         char delim = '|';
 
         StringBuilder sb = new StringBuilder();
+        sb.append("\n--------------------");
+        sb.append("\npredecessor = ");
+        sb.append(predecessorNode.getKey().toString());
         sb.append("\n--------------------");
         for (int i = 0; i < fingerTable.size(); i++) {
             sb.append('\n');

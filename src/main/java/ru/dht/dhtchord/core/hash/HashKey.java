@@ -14,23 +14,30 @@ public class HashKey implements Comparable<HashKey> {
     private final BigInteger intValue;
     private final HashSpace hashSpace;
 
-    static HashKey of(BigInteger intValue, int bits, HashSpace hashSpace) {
+    static HashKey of(BigInteger intValue, HashSpace hashSpace) {
         // intValue - 160 bit / 20 byte
-        BigInteger m = BigInteger.ONE.shiftLeft(bits); // m - 161 bit / 21 byte
+        BigInteger m = BigInteger.ONE.shiftLeft(hashSpace.getBitLength()); // m - 161 bit / 21 byte
         intValue = intValue.mod(m); // 20b mod 21b = 21b
         return of(intValue.toByteArray(), hashSpace);
     }
 
     static HashKey of(byte[] bytes, HashSpace hashSpace) {
-        if (Objects.isNull(bytes)) {
+        int byteLen = hashSpace.getBitLength() / 8;
+        if (Objects.isNull(bytes)
+                || bytes.length < byteLen
+                || bytes.length > byteLen + 1) {
             throw new IllegalArgumentException();
         }
 
-        byte[] bigIntegerBytes = new byte[bytes.length + 1];
-        bigIntegerBytes[0] = 0; // Defer from negative BigInteger numbers
-        System.arraycopy(bytes, 0, bigIntegerBytes, 1, bytes.length);
+        // always add one zero byte
+        byte[] bigIntegerBytes = bytes;
+        if (bytes.length == byteLen) {
+            bigIntegerBytes = new byte[bytes.length + 1];
+            bigIntegerBytes[0] = 0; // Defer from negative BigInteger numbers
+            System.arraycopy(bytes, 0, bigIntegerBytes, 1, bytes.length);
+        }
         return new HashKey(
-                bytes,
+                bigIntegerBytes,
                 new BigInteger(bigIntegerBytes),
                 hashSpace
         );

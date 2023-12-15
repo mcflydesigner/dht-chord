@@ -88,6 +88,7 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public void notifyAboutPredecessor(DhtNodeMeta node) {
+        log.info("Updated node predecessor. New value: {}", node);
         fingerTable.updatePredecessor(node);
     }
 
@@ -99,7 +100,7 @@ public class DhtNodeImpl implements DhtNode {
         for (int i = 0; i < fingerTable.getFingerTable().size(); i++) {
             fingerTable.fixFinger(i, this::findSuccessor);
         }
-        log.info("Fixed finger table: {}", fingerTable);
+        log.debug("Fixed finger table: {}", fingerTable);
     }
 
     @Override
@@ -157,11 +158,13 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public DhtNodeMeta findSuccessor(HashKey key) {
+        log.debug("Looking for successor of {}", key);
         if (fingerTable.isSuccessor(key)) {
             return selfNode;
         }
 
         DhtNodeMeta pred = fingerTable.findClosestPredecessor(key);
+        log.debug("Predecessor for key {} is {}", key, pred.getKey());
         if (selfNode.getKey().equals(pred.getKey())) {
             return fingerTable.getImmediateSuccessor();
         }
