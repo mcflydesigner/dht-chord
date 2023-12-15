@@ -112,8 +112,6 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public Map<String, String> getDataToTransfer(DhtNodeMeta dhtNodeMeta) {
-        validateJoiningNode(dhtNodeMeta);
-
         Pair<HashKey, HashKey> keyRange = getKeysRangeToTransfer(dhtNodeMeta);
         HashKey rangeStart = keyRange.getLeft();
         HashKey rangeEnd = keyRange.getRight();
@@ -129,8 +127,6 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public boolean confirmDataTransfer(DhtNodeMeta dhtNodeMeta) {
-        validateJoiningNode(dhtNodeMeta);
-
         Pair<HashKey, HashKey> keyRange = getKeysRangeToTransfer(dhtNodeMeta);
         HashKey rangeStart = keyRange.getLeft();
         HashKey rangeEnd = keyRange.getRight();
@@ -181,17 +177,6 @@ public class DhtNodeImpl implements DhtNode {
     @Override
     public DhtNodeMeta getSuccessor() {
         return fingerTable.getImmediateSuccessor();
-    }
-
-    private void validateJoiningNode(DhtNodeMeta dhtNodeMeta) {
-        DhtNodeMeta predecessor = getPredecessor();
-        HashKey nodeKey = dhtNodeMeta.getKey();
-        if (!predecessor.equals(selfNode) && nodeKey.compareTo(predecessor.getKey()) < 1) {
-            throw new IllegalArgumentException(
-                    String.format("Join node with id = %s failed to join since the node key is not in range (predecessorKey, currentNodeKey)",
-                            dhtNodeMeta.getNodeId())
-            );
-        }
     }
 
     private Pair<HashKey, HashKey> getKeysRangeToTransfer(DhtNodeMeta dhtNodeMeta) {
