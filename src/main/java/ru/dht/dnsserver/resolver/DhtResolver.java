@@ -19,13 +19,16 @@ public class DhtResolver implements DNSResolver {
     public Message resolve(Message request) {
         Record question = request.getQuestion();
 
+        request.getHeader().setFlag(Flags.QR); // this is a response
+        request.getHeader().setFlag(Flags.AA); // authoritative answer
+
         String encAnswer = dhtClient.getData(recordKey(question));
         if (encAnswer == null || encAnswer.length() <= 0) {
+            request.getHeader().setRcode(Rcode.NXDOMAIN);
             return request;
         }
         Record answer = Record.fromWire(Base64.decodeBase64(encAnswer), Section.ANSWER);
         request.addRecord(answer, Section.ANSWER);
-        request.getHeader().setFlag(Flags.QR);
 
         return request;
     }
