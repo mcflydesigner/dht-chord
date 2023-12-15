@@ -79,7 +79,7 @@
 				<archive>
 					<manifest>
 						<addClasspath>true</addClasspath>
-						<mainClass>ru.dht.dhtchord.DhtChordApplication</mainClass>
+						<mainClass>ru.dht.dnsserver.DNSProxyApplication</mainClass>
 					</manifest>
 				</archive>
 			</configuration>
