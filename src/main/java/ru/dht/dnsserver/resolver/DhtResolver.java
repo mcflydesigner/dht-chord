@@ -25,6 +25,7 @@ public class DhtResolver implements DNSResolver {
         }
         Record answer = Record.fromWire(Base64.decodeBase64(encAnswer), Section.ANSWER);
         request.addRecord(answer, Section.ANSWER);
+        request.getHeader().setFlag(Flags.QR);
 
         return request;
     }
