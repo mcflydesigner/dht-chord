@@ -14,6 +14,10 @@ public class SHA1HashSpace implements HashSpace {
         return Hashing.sha1().bits(); // 160 bits
     }
 
+    private int getHexLength() {
+        return getBitLength() / 4;
+    }
+
     @Override
     public HashKey hash(String digest) {
         byte[] hash = Hashing.sha1().hashString(digest, StandardCharsets.UTF_8).asBytes();
@@ -22,9 +26,11 @@ public class SHA1HashSpace implements HashSpace {
 
     @Override
     public HashKey fromString(String s) {
-        s = StringUtils.trimLeadingCharacter(s, '0');
-        if (s.length() * 4 > getBitLength()) {
-            throw new IllegalArgumentException(String.format("Key has invalid hash space = %s", s));
+        if (s.length() > getHexLength()) {
+            s = s.substring(s.length() - getHexLength());
+        }
+        if (s.length() < getHexLength()) {
+            s = Strings.padStart(s, getHexLength(), '0');
         }
         return HashKey.fromString(s, this);
     }
@@ -41,13 +47,13 @@ public class SHA1HashSpace implements HashSpace {
 
     @Override
     public String toString(byte[] value) {
-        String str = HexFormat.of().formatHex(value);
-        if (str.length() * 4 > getBitLength()) {
-            return StringUtils.trimLeadingCharacter(str, '0');
+        String s = HexFormat.of().formatHex(value);
+        if (s.length() > getHexLength()) {
+            s = s.substring(s.length() - getHexLength());
         }
-        if (str.length() * 4 < getBitLength()) {
-            return Strings.padStart(str, 40, '0');
+        if (s.length() < getHexLength()) {
+            s = Strings.padStart(s, getHexLength(), '0');
         }
-        return str;
+        return s;
     }
 }

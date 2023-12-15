@@ -117,6 +117,8 @@
           DHT_NODE_ID: "{{ dht_node_id }}"
           DHT_NODE_SECURITY_USERNAME: "dht-project"
           DHT_NODE_SECURITY_PASSWORD: "ui-unix-course"
+          DNS_ENRICHER_ENABLED: "true"
+          DNS_ENRICHER_ZONEFILE: "st7.sne23.ru.zone"
           SERVER_PORT: "8080"
         state: started
         restart: true

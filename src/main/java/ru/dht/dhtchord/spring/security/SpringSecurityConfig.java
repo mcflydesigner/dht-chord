@@ -17,10 +17,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @AllArgsConstructor
 public class SpringSecurityConfig {
 
-    @Bean
-    NodeCredentialsConfig nodeCredentialsConfig() {
-        return new NodeCredentialsConfig();
-    }
+//    @Bean
+//    NodeCredentialsConfig nodeCredentialsConfig() {
+//        return new NodeCredentialsConfig();
+//    }
 
     @Bean
     PasswordEncoder passwordEncoder(){
@@ -37,11 +37,10 @@ public class SpringSecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService() {
-        NodeCredentialsConfig credentials = nodeCredentialsConfig();
+    UserDetailsService userDetailsService(NodeCredentialsConfig credentialsConfig) {
         UserDetails user = User.builder()
-                .username(credentials.getUsername())
-                .password(passwordEncoder().encode(credentials.getPassword()))
+                .username(credentialsConfig.getUsername())
+                .password(passwordEncoder().encode(credentialsConfig.getPassword()))
                 .build();
 
         return new InMemoryUserDetailsManager(user);
