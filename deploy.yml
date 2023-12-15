@@ -58,7 +58,7 @@
         force_source: true
 
     - name: Create default containers
-      when: inventory_hostname == 'server-1'
+      when: "'server1' in group_names"
       community.docker.docker_container:
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
@@ -77,7 +77,7 @@
         seconds: 25
         
     - name: Create default containers
-      when: inventory_hostname == 'server-2'
+      when: "'server2' in group_names"
       community.docker.docker_container:
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
@@ -95,7 +95,7 @@
         seconds: 25
       
     - name: Create default containers
-      when: inventory_hostname == 'server-3'
+      when: "'server3' in group_names"
       community.docker.docker_container:
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
