@@ -69,29 +69,29 @@
       with_sequence: count={{ container_count }}
 
 
-      - name: Deployment pause after server 1
+    - name: Deployment pause after server 1
       pause: 
-        seconds: 20
+        seconds: 25
         
-      - name: Create default containers
+    - name: Create default containers
       when: inventory_hostname == 'server2'
-      community.docker.docker_container:
-        name: "{{ default_container_name }}{{ item }}"
-        image: "{{ default_container_image }}"
-        command: "{{ default_container_command }}"
-        env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
-        state: started
-        restart: true
-        ports:
-          - "8080:8080"
+        community.docker.docker_container:
+          name: "{{ default_container_name }}{{ item }}"
+          image: "{{ default_container_image }}"
+          command: "{{ default_container_command }}"
+          env:
+            NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+          state: started
+          restart: true
+          ports:
+            - "8080:8080"
       with_sequence: count={{ container_count }}
 
-      - name: Deployment pause after server 2
+    - name: Deployment pause after server 2
       pause: 
-        seconds: 20
+        seconds: 25
       
-      - name: Create default containers
+    - name: Create default containers
       when: inventory_hostname == 'server3'
       community.docker.docker_container:
         name: "{{ default_container_name }}{{ item }}"
