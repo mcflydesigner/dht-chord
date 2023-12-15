@@ -55,6 +55,7 @@
         force_source: true
 
     - name: Create default containers
+      delegate_to: server1
       community.docker.docker_container:
         name: "{{ default_container_name }}{{ item }}"
         image: "{{ default_container_image }}"
