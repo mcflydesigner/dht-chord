@@ -186,7 +186,7 @@ public class DhtNodeImpl implements DhtNode {
     private void validateJoiningNode(DhtNodeMeta dhtNodeMeta) {
         DhtNodeMeta predecessor = getPredecessor();
         HashKey nodeKey = dhtNodeMeta.getKey();
-        if (!predecessor.equals(selfNode) && (nodeKey.compareTo(predecessor.getKey()) < 1 || selfNode.getKey().compareTo(dhtNodeMeta.getKey()) < 1)) {
+        if (!predecessor.equals(selfNode) && nodeKey.compareTo(predecessor.getKey()) < 1) {
             throw new IllegalArgumentException(
                     String.format("Join node with id = %s failed to join since the node key is not in range (predecessorKey, currentNodeKey)",
                             dhtNodeMeta.getNodeId())
