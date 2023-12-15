@@ -56,8 +56,9 @@ public class ServerConfiguration {
     }
 
     @Bean
-    public DNSServer dnsServer(DNSResolver resolver) throws SocketException {
-        return new DNSServer(5354, resolver);
+    public DNSServer dnsServer(@Value("${dns.server.port:53}") int port,
+                               DNSResolver resolver) throws SocketException {
+        return new DNSServer(port, resolver);
     }
 
     @Bean
