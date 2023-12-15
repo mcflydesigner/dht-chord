@@ -64,11 +64,16 @@
         image: "{{ default_container_image }}"
         command: "{{ default_container_command }}"
         env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+          DHT_NODE_JOIN_ADDRESS: "{{ dht_node_join_address }}"
+          DHT_NODE_ADDRESS: "{{ dht_node_address }}"
+          DHT_NODE_ID: "{{ dht_node_id }}"
+          DHT_NODE_SECURITY_USERNAME: "dht-project"
+          DHT_NODE_SECURITY_PASSWORD: "ui-unix-course"
+          SERVER_PORT: "8080"
         state: started
         restart: true
         ports:
-          - "8080:8080"
+          - "80:8080"
       with_sequence: count={{ container_count }}
 
 
@@ -83,11 +88,17 @@
         image: "{{ default_container_image }}"
         command: "{{ default_container_command }}"
         env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+          DHT_NODE_JOIN_ADDRESS: "{{ dht_node_join_address }}"
+          DHT_NODE_ADDRESS: "{{ dht_node_address }}"
+          DHT_NODE_ID: "{{ dht_node_id }}"
+          DHT_NODE_SECURITY_USERNAME: "dht-project"
+          DHT_NODE_SECURITY_PASSWORD: "ui-unix-course"
+          SERVER_PORT: "8080"
+          
         state: started
         restart: true
         ports:
-          - "8080:8080"
+          - "80:8080"
       with_sequence: count={{ container_count }}
 
     - name: Deployment pause after server 2
@@ -101,9 +112,14 @@
         image: "{{ default_container_image }}"
         command: "{{ default_container_command }}"
         env:
-          NODE_JOIN_ADDRESS: "{{ node_join_address }}"
+          DHT_NODE_JOIN_ADDRESS: "{{ dht_node_join_address }}"
+          DHT_NODE_ADDRESS: "{{ dht_node_address }}"
+          DHT_NODE_ID: "{{ dht_node_id }}"
+          DHT_NODE_SECURITY_USERNAME: "dht-project"
+          DHT_NODE_SECURITY_PASSWORD: "ui-unix-course"
+          SERVER_PORT: "8080"
         state: started
         restart: true
         ports:
-          - "8080:8080"
+          - "80:8080"
       with_sequence: count={{ container_count }}
