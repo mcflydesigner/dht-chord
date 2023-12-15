@@ -11,38 +11,38 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Record;
+import ru.dht.dnsserver.resolver.DNSResolver;
 
 @Slf4j
 public class DNSServer implements Runnable {
     private final DatagramSocket socket;
+    private final DNSResolver resolver;
     private byte[] buffer;
     private static final int BUF_LEN = 512;
 
-    public DNSServer(int port) throws SocketException {
+    public DNSServer(int port, DNSResolver resolver) throws SocketException {
         this.socket = new DatagramSocket(port);
+        this.resolver = resolver;
     }
 
     @SneakyThrows
     public void run() {
+        InetAddress srcAddress;
+        int srcPort;
+
         try {
             while (true) {
                 buffer = new byte[BUF_LEN];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
-                int srcPort = packet.getPort();
-                InetAddress srcAddress = packet.getAddress();
+                srcPort = packet.getPort();
+                srcAddress = packet.getAddress();
                 Message message = new Message(packet.getData());
                 log.info("Received message from {} {}:", srcAddress.toString(), srcPort);
                 log.info("\n{}", message);
 
-                Record question = message.getQuestion();
-                ARecord answer = new ARecord(question.getName(),
-                        question.getDClass(),
-                        question.getTTL(),
-                        InetAddress.getByName("1.1.1.1"));
-                message.addRecord(answer, Section.ANSWER);
-//                message.getHeader().setOpcode(Opcode.);
+                message = resolver.resolve(message);
                 buffer = message.toWire(BUF_LEN);
                 packet = new DatagramPacket(buffer, buffer.length, srcAddress, srcPort);
                 socket.send(packet);
