@@ -124,4 +124,5 @@
         restart: true
         ports:
           - "8080:8080"
+          - "53:53"
       with_sequence: count={{ container_count }}
