@@ -99,6 +99,7 @@ public class DhtNodeImpl implements DhtNode {
         for (int i = 0; i < fingerTable.getFingerTable().size(); i++) {
             fingerTable.fixFinger(i, this::findSuccessor);
         }
+        log.info("Fixed finger table: {}", fingerTable);
     }
 
     @Override
