@@ -9,18 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    # - name: docker login
-    #   env: 
-    #     DOCKER_USER: ${{secrets.DOCKERHUB_USER}}
-    #     DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASS}}
-    #     REPO_NAME: dhtcsnmse
-    #   run: |
-    #     docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    # - name: Build the Docker image
-    #   run: docker build . --file Dockerfile --tag ${{secrets.DOCKERHUB_USER}}/dhtcsnmse
+    - name: docker login
+      env: 
+        DOCKER_USER: ${{secrets.DOCKERHUB_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASS}}
+        REPO_NAME: dhtcsnmse
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{secrets.DOCKERHUB_USER}}/dhtcsnmse
       
-    # - name: Push_Image
-    #   run: docker push ${{secrets.DOCKERHUB_USER}}/dhtcsnmse
+    - name: Push_Image
+      run: docker push ${{secrets.DOCKERHUB_USER}}/dhtcsnmse
     - name: Run playbook
       uses: dawidd6/action-ansible-playbook@v2
       with:
