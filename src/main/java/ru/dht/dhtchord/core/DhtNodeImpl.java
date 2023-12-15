@@ -93,9 +93,12 @@ public class DhtNodeImpl implements DhtNode {
 
     @Override
     public synchronized void fixFinger() {
-        int randomIdx = random.nextInt(fingerTable.getHashSpace().getBitLength());
-        log.debug("Fix finger is running for the index = {}", randomIdx);
-        fingerTable.fixFinger(randomIdx, this::findSuccessor);
+//        int randomIdx = random.nextInt(fingerTable.getHashSpace().getBitLength());
+//        log.debug("Fix finger is running for the index = {}", randomIdx);
+        log.debug("Fix finger is running for all ids");
+        for (int i = 0; i < fingerTable.getFingerTable().size(); i++) {
+            fingerTable.fixFinger(i, this::findSuccessor);
+        }
     }
 
     @Override

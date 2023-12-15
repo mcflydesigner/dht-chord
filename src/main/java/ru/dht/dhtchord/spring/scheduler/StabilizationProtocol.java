@@ -20,7 +20,7 @@ public class StabilizationProtocol {
         dhtNode.stabilize();
     }
 
-    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
     public void fixFingers() {
         dhtNode.fixFinger();
     }
