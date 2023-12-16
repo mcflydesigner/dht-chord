@@ -38,12 +38,16 @@ public class DNSServer implements Runnable {
 
                 srcPort = packet.getPort();
                 srcAddress = packet.getAddress();
-                Message message = new Message(packet.getData());
-                log.info("Received message from {} {}:", srcAddress.toString(), srcPort);
-                log.info("\n{}", message);
+                try {
+                    Message message = new Message(packet.getData());
+                    log.info("Received message from {} {}:", srcAddress.toString(), srcPort);
+                    log.info("\n{}", message);
 
-                message = resolver.resolve(message);
-                buffer = message.toWire(BUF_LEN);
+                    message = resolver.resolve(message);
+                    buffer = message.toWire(BUF_LEN);
+                } catch (Exception e) {
+                    log.error("Error while handling message {}", packet.getData(), e);
+                }
                 packet = new DatagramPacket(buffer, buffer.length, srcAddress, srcPort);
                 socket.send(packet);
             }

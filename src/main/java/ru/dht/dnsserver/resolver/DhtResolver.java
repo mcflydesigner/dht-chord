@@ -1,11 +1,13 @@
 package ru.dht.dnsserver.resolver;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.xbill.DNS.*;
 import org.xbill.DNS.Record;
 import ru.dht.dnsserver.DhtUnhashedLocalClient;
 
+@Slf4j
 public class DhtResolver implements DNSResolver {
 
     private final DhtUnhashedLocalClient dhtClient;
@@ -17,18 +19,23 @@ public class DhtResolver implements DNSResolver {
     @Override
     @SneakyThrows
     public Message resolve(Message request) {
-        Record question = request.getQuestion();
-
         request.getHeader().setFlag(Flags.QR); // this is a response
         request.getHeader().setFlag(Flags.AA); // authoritative answer
 
-        String encAnswer = dhtClient.getData(recordKey(question));
-        if (encAnswer == null || encAnswer.length() <= 0) {
-            request.getHeader().setRcode(Rcode.NXDOMAIN);
-            return request;
+        try {
+            Record question = request.getQuestion();
+
+            String encAnswer = dhtClient.getData(recordKey(question));
+            if (encAnswer == null || encAnswer.length() <= 0) {
+                request.getHeader().setRcode(Rcode.NXDOMAIN);
+                return request;
+            }
+            Record answer = Record.fromWire(Base64.decodeBase64(encAnswer), Section.ANSWER);
+            request.addRecord(answer, Section.ANSWER);
+        } catch (Exception e) {
+            log.error("Error while answering query {}", request, e);
+            request.getHeader().setRcode(Rcode.SERVFAIL);
         }
-        Record answer = Record.fromWire(Base64.decodeBase64(encAnswer), Section.ANSWER);
-        request.addRecord(answer, Section.ANSWER);
 
         return request;
     }
