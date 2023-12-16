@@ -47,7 +47,9 @@ public class DNSServer implements Runnable {
                     buffer = message.toWire(BUF_LEN);
                 } catch (Exception e) {
                     log.error("Error while handling message {}", packet.getData(), e);
+                    continue;
                 }
+
                 packet = new DatagramPacket(buffer, buffer.length, srcAddress, srcPort);
                 socket.send(packet);
             }
