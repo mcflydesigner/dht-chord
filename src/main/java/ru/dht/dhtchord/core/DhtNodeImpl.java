@@ -43,13 +43,16 @@ public class DhtNodeImpl implements DhtNode {
                                DhtNodeAddress joinAddress,
                                DhtNodeClient dhtNodeClient,
                                KeyValueStorage storage) {
+        log.info("Joining the cluster topology...");
         HashKey start = hashSpace.add(selfMeta.getKey(), 1);
         DhtNodeMeta successor = dhtNodeClient.findSuccessor(new DhtNodeMeta(null, null, joinAddress), start);
+        log.info("Got successor of {} is node {}", selfMeta.getKey(), successor);
         transferData(hashSpace, selfMeta, successor, dhtNodeClient, storage);
         DhtNodeMeta predecessor =  dhtNodeClient.updatePredecessor(successor, selfMeta);
         FingerTable fingerTable = FingerTable.buildForCluster(hashSpace,
                 selfMeta, successor, predecessor, (hashKey) -> dhtNodeClient.findSuccessor(successor, hashKey));
         log.info("Generated new finger table for the node (nodeId = {}): {}", selfMeta.getKey(), fingerTable);
+        log.info("Joined the cluster topology!");
         return new DhtNodeImpl(selfMeta, dhtNodeClient, hashSpace, fingerTable, storage);
     }
 
