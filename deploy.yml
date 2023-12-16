@@ -57,6 +57,17 @@
         source: pull
         force_source: true
 
+    - name: Get running containers
+      community.docker.docker_host_info:
+        containers: yes
+      register: running_containers
+
+    - name: Stop running containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: stopped
+      loop: "{{ running_containers.containers | map(attribute='Id') | list }}"
+
     - name: Create default containers
       when: "'server1' in group_names"
       community.docker.docker_container:
